@@ -30,9 +30,10 @@ class HrContract(models.Model):
         signed = self.sign_request_ids.filtered(lambda r: r.state == "signed")
 
         def label(request):
-            return (
-                (request.template_id.name or "") + " " + (request.reference or "")
-            ).lower()
+            # Normalize _-. to spaces so PDF filenames like
+            # "Plantilla_Contrato_ICA.pdf" still hit the word boundaries.
+            raw = (request.template_id.name or "") + " " + (request.reference or "")
+            return re.sub(r"[_\-.]+", " ", raw.lower())
 
         ndas = signed.filtered(
             lambda r: any(re.search(p, label(r)) for p in NDA_PATTERNS)
