@@ -13,6 +13,7 @@
         "views/res_partner_views.xml",
         "views/hr_views.xml",
         "report/bw_contract_report.xml",
+        "report/bw_nda_report.xml",
     ],
     "installable": True,
     "application": False,

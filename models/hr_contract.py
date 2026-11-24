@@ -28,6 +28,8 @@ CONTRACT_SIGN_BOXES = {
     "date": {"posY": 0.31, "width": 0.28, "height": 0.022},
 }
 CONTRACT_SIGN_X = {"company": 0.16, "worker": 0.66}
+# References of the tax-form requests this module creates (see bw_tax_form).
+TAX_FORM_PREFIXES = ("W-4", "W-9", "W-8BEN")
 SIGN_ITEM_TYPES = {
     "signature": "sign.sign_item_type_signature",
     "date": "sign.sign_item_type_date",
@@ -146,9 +148,9 @@ class HrContract(models.Model):
         }
 
     def action_bw_send_documents(self):
-        """Render the contract in the worker's language, prefill the tax form
-        and send both to Sign. Nothing but signature, date and the tax id is
-        left for the signer."""
+        """Render the NDA and the contract in the worker's language, prefill
+        the tax form and send them all to Sign. Nothing but signature, date
+        and the tax id is left for the signer."""
         self.ensure_one()
         employee = self.employee_id
         worker = employee.work_contact_id
@@ -183,49 +185,44 @@ class HrContract(models.Model):
             raise UserError(
                 _("Cannot send the documents. Missing: %s", ", ".join(missing))
             )
-        # "Agreement" in the name is what the activation gate matches on.
+        # "Agreement" / "NDA" in the name is what the activation gate matches.
         title = (
             "Independent Contractor Agreement"
             if self.bw_doc_kind == "contractor"
             else "Employment Agreement"
         )
+        documents = [(title, "bw_people_ops.action_report_bw_contract")]
+        if not self._bw_gate_docs()[0]:
+            # No signed NDA on the contract yet: send it with the agreement.
+            documents.insert(0, ("NDA", "bw_people_ops.action_report_bw_nda"))
+        names = ["%s - %s" % (doc_title, employee.name) for doc_title, _r in documents]
         if self.sign_request_ids.filtered(
-            lambda r: r.state != "canceled" and (r.reference or "").startswith(title)
+            lambda r: r.state != "canceled" and r.reference in names
         ):
             # Each send emails the signers: never do it twice by accident.
-            # (The NDA, sent separately from the same tab, does not block.)
             raise UserError(
                 _(
-                    "This contract already has a '%s' signature request. "
-                    "Cancel it in the Signatures tab before sending again.",
-                    title,
+                    "These documents were already sent for this contract. "
+                    "Cancel them in the Signatures tab before sending again."
                 )
             )
         worker_role = self.env.ref("sign.sign_item_role_employee")
         company_role = self.env.ref("hr_contract_sign.sign_item_role_job_responsible")
+        both = [(company_role, company_signer), (worker_role, worker)]
 
         # Build every PDF first: nothing is emailed if any of them fails.
-        pdf = self.env["ir.actions.report"]._render_qweb_pdf(
-            "bw_people_ops.action_report_bw_contract", self.ids
-        )[0]
-        last_page = len(PdfFileReader(io.BytesIO(pdf), strict=False).pages)
-        requests = [
-            (
-                "%s - %s" % (title, employee.name),
-                pdf,
-                [
-                    self._bw_sign_item(
-                        kind, role, last_page, dict(box, posX=CONTRACT_SIGN_X[side])
-                    )
-                    for side, role in (
-                        ("company", company_role),
-                        ("worker", worker_role),
-                    )
-                    for kind, box in CONTRACT_SIGN_BOXES.items()
-                ],
-                [(company_role, company_signer), (worker_role, worker)],
-            )
-        ]
+        requests = []
+        for name, (_title, report) in zip(names, documents):
+            pdf = self.env["ir.actions.report"]._render_qweb_pdf(report, self.ids)[0]
+            last_page = len(PdfFileReader(io.BytesIO(pdf), strict=False).pages)
+            items = [
+                self._bw_sign_item(
+                    kind, role, last_page, dict(box, posX=CONTRACT_SIGN_X[side])
+                )
+                for side, role in (("company", company_role), ("worker", worker_role))
+                for kind, box in CONTRACT_SIGN_BOXES.items()
+            ]
+            requests.append((name, pdf, items, both))
         if form in irs_forms.FIELD_MAP:
             with file_open(
                 "bw_people_ops/static/src/irs/f%s.pdf" % form, "rb"
@@ -267,6 +264,35 @@ class HrContract(models.Model):
             )
         return True
 
+    def _bw_gate_label(self, request):
+        """Text the gate classifies a sign request by. The worker's name is
+        removed and tax forms are ignored, so "W-9 - Ana Contract" or a
+        worker called "Ica" can never count as the signed agreement."""
+        reference = request.reference or ""
+        if reference.startswith(TAX_FORM_PREFIXES):
+            return ""
+        raw = (request.template_id.name or "") + " " + reference
+        for name in {self.employee_id.name, self.employee_id.legal_name}:
+            if name:
+                raw = raw.replace(name, " ")
+        # Normalize _-. to spaces so PDF filenames like
+        # "Plantilla_Contrato_ICA.pdf" still hit the word boundaries.
+        return re.sub(r"[_\-.]+", " ", raw.lower())
+
+    def _bw_gate_docs(self):
+        """Signed NDAs and signed agreements on this contract."""
+        self.ensure_one()
+        signed = self.sign_request_ids.filtered(lambda r: r.state == "signed")
+        ndas = signed.filtered(
+            lambda r: any(re.search(p, self._bw_gate_label(r)) for p in NDA_PATTERNS)
+        )
+        agreements = (signed - ndas).filtered(
+            lambda r: any(
+                re.search(p, self._bw_gate_label(r)) for p in AGREEMENT_PATTERNS
+            )
+        )
+        return ndas, agreements
+
     def _bw_gate_missing(self):
         """Return the list of documents the activation gate still requires on
         this contract (empty list = gate passes).
@@ -277,20 +303,7 @@ class HrContract(models.Model):
         neither block nor satisfy the gate.
         """
         self.ensure_one()
-        signed = self.sign_request_ids.filtered(lambda r: r.state == "signed")
-
-        def label(request):
-            # Normalize _-. to spaces so PDF filenames like
-            # "Plantilla_Contrato_ICA.pdf" still hit the word boundaries.
-            raw = (request.template_id.name or "") + " " + (request.reference or "")
-            return re.sub(r"[_\-.]+", " ", raw.lower())
-
-        ndas = signed.filtered(
-            lambda r: any(re.search(p, label(r)) for p in NDA_PATTERNS)
-        )
-        agreements = (signed - ndas).filtered(
-            lambda r: any(re.search(p, label(r)) for p in AGREEMENT_PATTERNS)
-        )
+        ndas, agreements = self._bw_gate_docs()
         missing = []
         if not ndas:
             missing.append(_("NDA"))

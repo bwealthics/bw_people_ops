@@ -9,11 +9,16 @@
   alcance, compensación, bono, beneficios, facturación, preaviso).
 - Empleado: idioma del documento y formulario fiscal (W-4, W-9, W-8BEN)
   calculado por tipo y país de residencia, editable.
-- Reporte PDF del contrato (empleo o contratista, español o inglés) y botón
-  "Send BW Documents" que crea las solicitudes de firma enlazadas al contrato.
+- Reportes PDF del NDA y del contrato (empleo o contratista, español o
+  inglés) y botón "Send BW Documents" que crea las solicitudes de firma
+  enlazadas al contrato. El NDA se omite si el contrato ya tiene uno firmado.
 - W-9 y W-8BEN prellenados desde la ficha; el número fiscal lo escribe la
   persona al firmar. Queda en el PDF firmado y en los valores de la
   solicitud de firma de Odoo Sign; no pasa por el portal, n8n ni Telegram.
+
+### Corregido
+- Puerta de activación: ya no clasifica por el nombre de la persona ni cuenta
+  un formulario fiscal como contrato o NDA.
 
 ### Cambiado
 - `system` pasa de texto libre a lista cerrada. La migración conserva el

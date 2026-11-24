@@ -1,3 +1,5 @@
+from types import SimpleNamespace
+
 from odoo.exceptions import UserError, ValidationError
 from odoo.tests import TransactionCase
 
@@ -111,3 +113,19 @@ class TestPeopleOps(TransactionCase):
     def test_send_documents_requires_data(self):
         with self.assertRaises(UserError):
             self.contract.action_bw_send_documents()
+
+    def test_gate_label_ignores_worker_name_and_tax_forms(self):
+        def request(reference):
+            return SimpleNamespace(
+                reference=reference,
+                template_id=SimpleNamespace(name=reference + ".pdf"),
+            )
+
+        self.employee.name = "Ica Contrato"
+        label = self.contract._bw_gate_label
+        self.assertEqual(label(request("W-9 - Ica Contrato")), "")
+        self.assertNotIn("contrato", label(request("Carta - Ica Contrato")))
+        self.assertIn(
+            "agreement", label(request("Employment Agreement - Ica Contrato"))
+        )
+        self.assertIn("nda", label(request("NDA - Ica Contrato")))
