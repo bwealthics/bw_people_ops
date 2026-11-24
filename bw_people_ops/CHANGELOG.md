@@ -1,5 +1,13 @@
 # Changelog
 
+## 18.0.2.0.1 (2026-11-24)
+
+### Corregido
+- Casillas de firma y fecha del contrato y del NDA: posiciones medidas sobre
+  el PDF real de producción.
+- El firmante de la empresa (responsable de RR.HH.) ahora se ve y se edita en
+  la pestaña "BW Documents".
+
 ## 18.0.2.0.0 (2026-11-24)
 
 ### Añadido

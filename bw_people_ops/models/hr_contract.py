@@ -21,13 +21,13 @@ AGREEMENT_PATTERNS = (r"\bagreement\b", r"\bcontract\b", r"\bcontrato\b", r"\bac
 
 # Sign items on the contract's last page (fractions of the page, origin
 # top-left), matching the fixed 25mm/8mm boxes of report/bw_contract_report.xml.
-# ponytail: estimated from the layout and the default paper format, not from a
-# rendered PDF. Calibrate here after the first real send.
+# Measured on the PDF rendered by the production server (US Letter, default
+# paper format) on 2026-11-24. Re-measure if the paper format changes.
 CONTRACT_SIGN_BOXES = {
-    "signature": {"posY": 0.225, "width": 0.28, "height": 0.075},
-    "date": {"posY": 0.31, "width": 0.28, "height": 0.022},
+    "signature": {"posY": 0.270, "width": 0.205, "height": 0.068},
+    "date": {"posY": 0.345, "width": 0.205, "height": 0.021},
 }
-CONTRACT_SIGN_X = {"company": 0.16, "worker": 0.66}
+CONTRACT_SIGN_X = {"company": 0.275, "worker": 0.732}
 # References of the tax-form requests this module creates (see bw_tax_form).
 TAX_FORM_PREFIXES = ("W-4", "W-9", "W-8BEN")
 SIGN_ITEM_TYPES = {

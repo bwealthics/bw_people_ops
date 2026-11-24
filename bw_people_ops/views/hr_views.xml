@@ -29,6 +29,8 @@
                     <group>
                         <group>
                             <field name="bw_doc_kind"/>
+                            <!-- Hidden in the core form; the send button needs it. -->
+                            <field name="hr_responsible_id" string="Company Signer"/>
                             <field name="bw_flsa" invisible="bw_doc_kind != 'employment'"/>
                             <field name="bw_modality" invisible="bw_doc_kind != 'employment'"/>
                             <field name="bw_schedule" invisible="bw_doc_kind != 'employment'"/>
