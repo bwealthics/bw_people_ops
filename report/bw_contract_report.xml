@@ -1,0 +1,412 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 BWEALTHICS LLC -->
+<odoo>
+  <record id="action_report_bw_contract" model="ir.actions.report">
+    <field name="name">Contrato BW</field>
+    <field name="model">hr.contract</field>
+    <field name="report_type">qweb-pdf</field>
+    <field name="report_name">bw_people_ops.report_bw_contract</field>
+    <field name="report_file">bw_people_ops.report_bw_contract</field>
+    <field name="print_report_name">'Contrato - %s' % (object.employee_id.name)</field>
+    <field name="binding_model_id" ref="hr_contract.model_hr_contract"/>
+    <field name="binding_type">report</field>
+  </record>
+
+  <template id="report_bw_contract">
+    <t t-call="web.html_container">
+      <t t-foreach="docs" t-as="doc">
+        <t t-call="web.basic_layout">
+          <t t-if="doc.bw_doc_kind == 'employment' and doc.employee_id.bw_doc_lang == 'es'">
+            <t t-call="bw_people_ops.report_bw_contract_employment_es"/>
+          </t>
+          <t t-elif="doc.bw_doc_kind == 'employment' and doc.employee_id.bw_doc_lang == 'en'">
+            <t t-call="bw_people_ops.report_bw_contract_employment_en"/>
+          </t>
+          <t t-elif="doc.bw_doc_kind == 'contractor' and doc.employee_id.bw_doc_lang == 'es'">
+            <t t-call="bw_people_ops.report_bw_contract_contractor_es"/>
+          </t>
+          <t t-elif="doc.bw_doc_kind == 'contractor' and doc.employee_id.bw_doc_lang == 'en'">
+            <t t-call="bw_people_ops.report_bw_contract_contractor_en"/>
+          </t>
+        </t>
+      </t>
+    </t>
+  </template>
+
+  <template id="report_bw_contract_employment_es">
+    <div class="page" style="font-size: 11px;">
+      <h2 class="text-center">CONTRATO DE TRABAJO</h2>
+      <table class="table table-sm table-bordered">
+        <tbody>
+          <tr><td style="width: 30%;"><strong>Empleador</strong></td><td>Bwealthics LLC, compañía de responsabilidad limitada registrada en Texas, EE.UU. ("Bwealthics")</td></tr>
+          <tr><td style="width: 30%;"><strong>Empleado/a</strong></td><td><span t-out="doc.employee_id.legal_name or doc.employee_id.name"/>, con domicilio en <span t-out="', '.join([x for x in [doc.employee_id.private_city, doc.employee_id.private_state_id.name] if x])"/> ("el/la Empleado/a")</td></tr>
+          <tr><td style="width: 30%;"><strong>Cargo</strong></td><td><span t-out="doc.job_id.name or doc.employee_id.job_title"/></td></tr>
+          <tr><td style="width: 30%;"><strong>Fecha de inicio</strong></td><td><span t-out="doc.date_start" t-options='{"widget": "date"}'/></td></tr>
+          <tr><td style="width: 30%;"><strong>Clasificación FLSA</strong></td><td><t t-if="doc.bw_flsa == 'exempt'">Exento</t><t t-elif="doc.bw_flsa == 'non_exempt'">No Exento</t></td></tr>
+          <tr><td style="width: 30%;"><strong>Compensación</strong></td><td><span style="white-space: pre-line;" t-out="doc.bw_compensation_clause"/></td></tr>
+          <tr><td style="width: 30%;"><strong>Bono o comisión</strong></td><td><t t-if="doc.bw_bonus_clause"><span style="white-space: pre-line;" t-out="doc.bw_bonus_clause"/></t><t t-else="">No aplica</t></td></tr>
+          <tr><td style="width: 30%;"><strong>Modalidad y horario</strong></td><td><t t-if="doc.bw_modality == 'remote'">remoto</t><t t-elif="doc.bw_modality == 'hybrid'">h&#237;brido</t><t t-elif="doc.bw_modality == 'onsite'">presencial</t>, <span t-out="doc.bw_schedule"/> (hora de Texas)</td></tr>
+          <tr><td style="width: 30%;"><strong>Correo corporativo</strong></td><td><span t-out="doc.employee_id.work_email"/></td></tr>
+          <tr><td style="width: 30%;"><strong>Correo personal</strong></td><td><span t-out="doc.employee_id.private_email"/></td></tr>
+        </tbody>
+      </table>
+      <h4>1. Relación de empleo a voluntad</h4>
+      <p>Este contrato establece una relación de empleo, no de contratista independiente, sujeta a las leyes federales y del Estado de Texas, incluyendo la Fair Labor Standards Act (FLSA) y la Texas Payday Law. El empleo es a voluntad (at-will): cualquiera de las partes puede terminarlo en cualquier momento, con o sin causa y con o sin aviso previo. Ningún otro documento de Bwealthics garantiza empleo por un período determinado.</p>
+      <h4>2. Funciones</h4>
+      <p>El/la Empleado/a desempeñará el cargo indicado y será responsable de: <span style="white-space: pre-line;" t-out="doc.bw_scope"/>, además de otras actividades asignadas de común acuerdo.</p>
+      <h4>3. Compensación</h4>
+      <p>La compensación es la indicada en la tabla inicial y se paga según el calendario de nómina de Bwealthics, menos las deducciones aplicables. Si la clasificación es No Exento, las horas trabajadas en exceso de 40 por semana laboral se pagan a 1.5 veces la tarifa regular. Si es Exento, no hay pago de horas extra.</p>
+      <h4>4. Jornada y comunicación</h4>
+      <ul>
+        <li>Responder comunicaciones internas en máximo 1 hora hábil, con acuse de recibo.</li>
+        <li>Registrar las horas en la herramienta oficial de la empresa (actualmente Timely).</li>
+        <li>Asistir a las reuniones de equipo convocadas con al menos 24 horas de anticipación.</li>
+      </ul>
+      <h4>5. Beneficios</h4>
+      <p>Sujeto a los requisitos de elegibilidad y a los documentos de cada plan: <t t-if="doc.bw_benefits_clause"><span style="white-space: pre-line;" t-out="doc.bw_benefits_clause"/></t><t t-else="">No aplica</t>.</p>
+      <h4>6. Herramientas y accesos</h4>
+      <p>Bwealthics proveerá los accesos necesarios para el cargo (Odoo, correo corporativo, 1Password, Google Drive, Gitea, herramientas de IA autorizadas y otros que apliquen). Los equipos, licencias y accesos son propiedad de Bwealthics y deben devolverse al terminar el empleo.</p>
+      <h4>7. Confidencialidad y datos de clientes</h4>
+      <p>El/la Empleado/a tendrá acceso a información altamente confidencial de Bwealthics y de sus clientes (datos bancarios, estados financieros, nóminas, información fiscal, credenciales y registros contables). Se obliga, durante el empleo y de forma indefinida después, a:</p>
+      <ul>
+        <li>No divulgar, copiar ni transferir esa información a terceros sin autorización escrita previa.</li>
+        <li>No utilizarla para beneficio propio ni de terceros.</li>
+        <li>No almacenar datos de clientes en dispositivos, correos o servicios personales, ni enviarlos por canales no autorizados (incluido WhatsApp personal).</li>
+        <li>Procesar transacciones de clientes únicamente en sistemas autorizados por Bwealthics.</li>
+        <li>Reportar de inmediato cualquier acceso no autorizado, pérdida, brecha o irregularidad.</li>
+      </ul>
+      <p>El incumplimiento es causal de terminación inmediata y puede dar lugar a acciones legales por daños.</p>
+      <h4>8. Seguridad de la información</h4>
+      <ul>
+        <li>Usar VPN activa y dispositivos que cumplan los estándares de Bwealthics al acceder a sistemas de la empresa o de clientes.</li>
+        <li>Usar exclusivamente el correo corporativo para comunicaciones de clientes y operaciones.</li>
+        <li>Gestionar credenciales únicamente en 1Password. Está prohibido compartirlas o exponerlas.</li>
+        <li>Notificar de inmediato la pérdida, robo o compromiso de cualquier dispositivo con acceso.</li>
+      </ul>
+      <h4>9. Propiedad intelectual</h4>
+      <p>Todo trabajo producido en el ejercicio de las funciones (análisis, reportes, procesos, documentación, configuraciones de Odoo, metodologías y demás entregables) es propiedad exclusiva de Bwealthics como obra por encargo ("work made for hire"). En la medida en que algún entregable no califique como tal, el/la Empleado/a cede a Bwealthics todo derecho, título e interés sobre él.</p>
+      <h4>10. No solicitación</h4>
+      <p>Durante el empleo y por doce (12) meses después de su terminación, el/la Empleado/a no podrá: (a) solicitar ni prestar servicios a clientes activos o prospectos de Bwealthics con quienes haya tenido contacto material; (b) inducir a miembros del equipo a terminar su relación con la empresa; ni (c) revelar la lista de clientes, las condiciones comerciales o información de las operaciones. Esta cláusula se interpreta conforme al Texas Business &amp; Commerce Code § 15.50 y siguientes.</p>
+      <h4>11. Verificación y autorización de trabajo</h4>
+      <p>Este empleo está condicionado a la verificación de antecedentes, cuando aplique, y a la verificación de identidad y autorización para trabajar en los Estados Unidos, incluyendo el Formulario I-9.</p>
+      <h4>12. Terminación</h4>
+      <p>A la terminación, Bwealthics pagará todo salario devengado y no pagado conforme a la Texas Payday Law. El/la Empleado/a devolverá equipos y propiedad de la empresa y transferirá archivos y trabajo en curso a quien Bwealthics designe; los accesos se revocan en 24 horas. Son causales de terminación inmediata la violación de confidencialidad, el uso no autorizado de accesos o datos, el incumplimiento grave y reiterado, y la conducta que cause daño a Bwealthics o a sus clientes.</p>
+      <h4>13. Ley aplicable y disposiciones generales</h4>
+      <p>Este contrato se rige por las leyes del Estado de Texas y cualquier disputa se someterá a sus tribunales, previa negociación directa y, de ser necesario, mediación. Este contrato reemplaza cualquier acuerdo anterior sobre su objeto; solo puede modificarse por escrito firmado por ambas partes; las notificaciones formales se hacen por correo corporativo; y si alguna cláusula fuera inválida, las demás permanecen vigentes.</p>
+      <div style="page-break-before: always;">
+        <h4>Firmas</h4>
+        <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+          <tr>
+          <td style="width: 50%; vertical-align: top; padding: 0 4mm;">
+            <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+              <tr><td colspan="2" style="height: 8mm; font-weight: bold;">Bwealthics LLC</td></tr>
+              <tr><td colspan="2" style="height: 8mm;"><span t-out="doc.hr_responsible_id.name"/><t t-if="doc.hr_responsible_id.employee_id.job_title">, <span t-out="doc.hr_responsible_id.employee_id.job_title"/></t></td></tr>
+              <tr>
+                <td style="width: 25%; height: 25mm; vertical-align: bottom;">Firma:</td>
+                <td style="width: 75%;"><div style="height: 25mm; border: 1px solid #000; box-sizing: border-box;"></div></td>
+              </tr>
+              <tr>
+                <td style="width: 25%; height: 8mm; vertical-align: bottom;">Fecha:</td>
+                <td style="width: 75%;"><div style="height: 8mm; border: 1px solid #000; box-sizing: border-box;"></div></td>
+              </tr>
+            </table>
+          </td>
+          <td style="width: 50%; vertical-align: top; padding: 0 4mm;">
+            <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+              <tr><td colspan="2" style="height: 8mm; font-weight: bold;">Empleado/a</td></tr>
+              <tr><td colspan="2" style="height: 8mm;"><span t-out="doc.employee_id.legal_name or doc.employee_id.name"/></td></tr>
+              <tr>
+                <td style="width: 25%; height: 25mm; vertical-align: bottom;">Firma:</td>
+                <td style="width: 75%;"><div style="height: 25mm; border: 1px solid #000; box-sizing: border-box;"></div></td>
+              </tr>
+              <tr>
+                <td style="width: 25%; height: 8mm; vertical-align: bottom;">Fecha:</td>
+                <td style="width: 75%;"><div style="height: 8mm; border: 1px solid #000; box-sizing: border-box;"></div></td>
+              </tr>
+            </table>
+          </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </template>
+
+  <template id="report_bw_contract_employment_en">
+    <div class="page" style="font-size: 11px;">
+      <h2 class="text-center">EMPLOYMENT AGREEMENT</h2>
+      <table class="table table-sm table-bordered">
+        <tbody>
+          <tr><td style="width: 30%;"><strong>Employer</strong></td><td>Bwealthics LLC, a limited liability company registered in Texas, USA ("Bwealthics")</td></tr>
+          <tr><td style="width: 30%;"><strong>Employee</strong></td><td><span t-out="doc.employee_id.legal_name or doc.employee_id.name"/>, residing in <span t-out="', '.join([x for x in [doc.employee_id.private_city, doc.employee_id.private_state_id.name] if x])"/> (the "Employee")</td></tr>
+          <tr><td style="width: 30%;"><strong>Title</strong></td><td><span t-out="doc.job_id.name or doc.employee_id.job_title"/></td></tr>
+          <tr><td style="width: 30%;"><strong>Start date</strong></td><td><span t-out="doc.date_start" t-options='{"widget": "date"}'/></td></tr>
+          <tr><td style="width: 30%;"><strong>FLSA classification</strong></td><td><span t-out="dict(doc._fields['bw_flsa'].selection).get(doc.bw_flsa)"/></td></tr>
+          <tr><td style="width: 30%;"><strong>Compensation</strong></td><td><span style="white-space: pre-line;" t-out="doc.bw_compensation_clause"/></td></tr>
+          <tr><td style="width: 30%;"><strong>Bonus or commission</strong></td><td><t t-if="doc.bw_bonus_clause"><span style="white-space: pre-line;" t-out="doc.bw_bonus_clause"/></t><t t-else="">Not applicable</t></td></tr>
+          <tr><td style="width: 30%;"><strong>Modality and schedule</strong></td><td><t t-if="doc.bw_modality == 'remote'">Remote</t><t t-elif="doc.bw_modality == 'hybrid'">Hybrid</t><t t-elif="doc.bw_modality == 'onsite'">On-site</t>, <span t-out="doc.bw_schedule"/> (Texas time)</td></tr>
+          <tr><td style="width: 30%;"><strong>Corporate email</strong></td><td><span t-out="doc.employee_id.work_email"/></td></tr>
+          <tr><td style="width: 30%;"><strong>Personal email</strong></td><td><span t-out="doc.employee_id.private_email"/></td></tr>
+        </tbody>
+      </table>
+      <h4>1. At-will employment relationship</h4>
+      <p>This agreement establishes an employment relationship, not an independent contractor relationship, subject to federal and Texas law, including the Fair Labor Standards Act (FLSA) and the Texas Payday Law. Employment is at-will: either party may terminate it at any time, with or without cause and with or without notice. No other Bwealthics document guarantees employment for any specific period.</p>
+      <h4>2. Duties</h4>
+      <p>The Employee shall serve in the title stated above and be responsible for: <span style="white-space: pre-line;" t-out="doc.bw_scope"/>, in addition to other activities mutually agreed upon.</p>
+      <h4>3. Compensation</h4>
+      <p>Compensation is as stated in the table above, payable per Bwealthics' payroll schedule, less applicable deductions. If classified as Non-Exempt, hours worked in excess of 40 per workweek are paid at 1.5 times the regular rate. If Exempt, the Employee is not eligible for overtime pay.</p>
+      <h4>4. Schedule and communication</h4>
+      <ul>
+        <li>Respond to internal communications within 1 business hour, acknowledging receipt.</li>
+        <li>Track time in the official company tool (currently Timely).</li>
+        <li>Attend team meetings scheduled with at least 24 hours' notice.</li>
+      </ul>
+      <h4>5. Benefits</h4>
+      <p>Subject to eligibility requirements and the applicable plan documents: <t t-if="doc.bw_benefits_clause"><span style="white-space: pre-line;" t-out="doc.bw_benefits_clause"/></t><t t-else="">Not applicable</t>.</p>
+      <h4>6. Tools and access</h4>
+      <p>Bwealthics will provide the access required for the role (Odoo, corporate email, 1Password, Google Drive, Gitea, authorized AI tools, and others as applicable). Devices, licenses, and access remain Bwealthics property and must be returned upon termination.</p>
+      <h4>7. Confidentiality and client data</h4>
+      <p>The Employee will have access to highly confidential information of Bwealthics and its clients (banking data, financial statements, payroll, tax information, credentials, and accounting records). During employment and indefinitely afterward, the Employee shall:</p>
+      <ul>
+        <li>Not disclose, copy, or transfer that information to any third party without prior written authorization.</li>
+        <li>Not use it for personal benefit or for the benefit of any third party.</li>
+        <li>Not store client data on personal devices, email accounts, or services, nor send it through unauthorized channels (including personal WhatsApp).</li>
+        <li>Process client transactions only within systems authorized by Bwealthics.</li>
+        <li>Immediately report any unauthorized access, loss, breach, or irregularity.</li>
+      </ul>
+      <p>Breach is grounds for immediate termination and may result in legal action for damages.</p>
+      <h4>8. Information security</h4>
+      <ul>
+        <li>Use an active VPN and devices meeting Bwealthics' standards when accessing company or client systems.</li>
+        <li>Use corporate email exclusively for client and operations communications.</li>
+        <li>Manage credentials only through 1Password. Sharing or exposing credentials is prohibited.</li>
+        <li>Immediately report the loss, theft, or compromise of any device with access.</li>
+      </ul>
+      <h4>9. Intellectual property</h4>
+      <p>All work produced in the course of the Employee's duties (analyses, reports, processes, documentation, Odoo configurations, methodologies, and other deliverables) is the exclusive property of Bwealthics as a work made for hire. To the extent any deliverable does not qualify as such, the Employee assigns to Bwealthics all right, title, and interest in it.</p>
+      <h4>10. Non-solicitation</h4>
+      <p>During employment and for twelve (12) months after termination, the Employee shall not: (a) solicit or provide services to any active client or prospect of Bwealthics with whom the Employee had material contact; (b) induce team members to end their relationship with the company; or (c) disclose the client list, commercial terms, or information about operations. This clause is interpreted consistent with the Texas Business &amp; Commerce Code § 15.50 et seq.</p>
+      <h4>11. Background check and work authorization</h4>
+      <p>Employment is contingent upon a background check, where applicable, and verification of identity and authorization to work in the United States, including Form I-9.</p>
+      <h4>12. Termination</h4>
+      <p>Upon termination, Bwealthics will pay all earned and unpaid wages in accordance with the Texas Payday Law. The Employee will return company equipment and property and transfer files and ongoing work to the person Bwealthics designates; access is revoked within 24 hours. Grounds for immediate termination: breach of confidentiality, unauthorized use of access or data, serious and repeated non-compliance, and conduct causing harm to Bwealthics or its clients.</p>
+      <h4>13. Governing law and general provisions</h4>
+      <p>This agreement is governed by the laws of the State of Texas, and any dispute shall be submitted to its courts after direct negotiation and, if necessary, mediation. This agreement supersedes any prior agreement on its subject matter; it may be amended only in writing signed by both parties; formal notices are sent by corporate email; and if any provision is held invalid, the remainder stays in force.</p>
+      <div style="page-break-before: always;">
+        <h4>Signatures</h4>
+        <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+          <tr>
+          <td style="width: 50%; vertical-align: top; padding: 0 4mm;">
+            <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+              <tr><td colspan="2" style="height: 8mm; font-weight: bold;">Bwealthics LLC</td></tr>
+              <tr><td colspan="2" style="height: 8mm;"><span t-out="doc.hr_responsible_id.name"/><t t-if="doc.hr_responsible_id.employee_id.job_title">, <span t-out="doc.hr_responsible_id.employee_id.job_title"/></t></td></tr>
+              <tr>
+                <td style="width: 25%; height: 25mm; vertical-align: bottom;">Signature:</td>
+                <td style="width: 75%;"><div style="height: 25mm; border: 1px solid #000; box-sizing: border-box;"></div></td>
+              </tr>
+              <tr>
+                <td style="width: 25%; height: 8mm; vertical-align: bottom;">Date:</td>
+                <td style="width: 75%;"><div style="height: 8mm; border: 1px solid #000; box-sizing: border-box;"></div></td>
+              </tr>
+            </table>
+          </td>
+          <td style="width: 50%; vertical-align: top; padding: 0 4mm;">
+            <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+              <tr><td colspan="2" style="height: 8mm; font-weight: bold;">Employee</td></tr>
+              <tr><td colspan="2" style="height: 8mm;"><span t-out="doc.employee_id.legal_name or doc.employee_id.name"/></td></tr>
+              <tr>
+                <td style="width: 25%; height: 25mm; vertical-align: bottom;">Signature:</td>
+                <td style="width: 75%;"><div style="height: 25mm; border: 1px solid #000; box-sizing: border-box;"></div></td>
+              </tr>
+              <tr>
+                <td style="width: 25%; height: 8mm; vertical-align: bottom;">Date:</td>
+                <td style="width: 75%;"><div style="height: 8mm; border: 1px solid #000; box-sizing: border-box;"></div></td>
+              </tr>
+            </table>
+          </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </template>
+
+  <template id="report_bw_contract_contractor_es">
+    <div class="page" style="font-size: 11px;">
+      <h2 class="text-center">CONTRATO DE CONTRATISTA INDEPENDIENTE</h2>
+      <table class="table table-sm table-bordered">
+        <tbody>
+          <tr><td style="width: 30%;"><strong>Empresa</strong></td><td>Bwealthics LLC, compañía de responsabilidad limitada registrada en Texas, EE.UU. ("Bwealthics")</td></tr>
+          <tr><td style="width: 30%;"><strong>Contratista</strong></td><td><span t-out="doc.employee_id.legal_name or doc.employee_id.name"/>, con domicilio en <span t-out="', '.join([x for x in [doc.employee_id.private_city, doc.employee_id.private_country_id.name] if x])"/> ("el/la Contratista")</td></tr>
+          <tr><td style="width: 30%;"><strong>Servicios</strong></td><td><span t-out="doc.job_id.name or doc.employee_id.job_title"/></td></tr>
+          <tr><td style="width: 30%;"><strong>Fecha de inicio</strong></td><td><span t-out="doc.date_start" t-options='{"widget": "date"}'/></td></tr>
+          <tr><td style="width: 30%;"><strong>Honorarios</strong></td><td><span style="white-space: pre-line;" t-out="doc.bw_compensation_clause"/></td></tr>
+          <tr><td style="width: 30%;"><strong>Facturación y pago</strong></td><td><span style="white-space: pre-line;" t-out="doc.bw_invoicing_clause"/></td></tr>
+          <tr><td style="width: 30%;"><strong>Formulario fiscal</strong></td><td><t t-if="doc.employee_id.bw_tax_form == 'w9'">W-9</t><t t-elif="doc.employee_id.bw_tax_form == 'w8ben'">W-8BEN</t><t t-elif="doc.employee_id.bw_tax_form == 'w4'">W-4</t></td></tr>
+          <tr><td style="width: 30%;"><strong>Preaviso de terminación</strong></td><td><span t-out="doc.bw_notice_days"/> días</td></tr>
+          <tr><td style="width: 30%;"><strong>Correo corporativo</strong></td><td><span t-out="doc.employee_id.work_email"/></td></tr>
+          <tr><td style="width: 30%;"><strong>Correo personal</strong></td><td><span t-out="doc.employee_id.private_email"/></td></tr>
+        </tbody>
+      </table>
+      <h4>1. Relación independiente</h4>
+      <p>El/la Contratista presta servicios como contratista independiente. Este contrato no crea una relación de empleo, sociedad ni agencia. El/la Contratista no tiene derecho a beneficios de empleado, decide cómo, cuándo y dónde ejecuta los servicios, y no puede obligar a Bwealthics frente a terceros.</p>
+      <h4>2. Servicios</h4>
+      <p>El/la Contratista prestará los siguientes servicios: <span style="white-space: pre-line;" t-out="doc.bw_scope"/>, además de otros que las partes acuerden por escrito. Los servicios se entregan con la calidad y en los plazos acordados para cada encargo.</p>
+      <h4>3. Honorarios y pago</h4>
+      <p>Bwealthics pagará los honorarios indicados en la tabla inicial contra factura o reporte de horas aprobado, registrado en la herramienta oficial (actualmente Timely). Los honorarios son la única contraprestación; no se pagan horas extra, vacaciones ni otros beneficios, salvo acuerdo escrito.</p>
+      <h4>4. Impuestos</h4>
+      <p>El/la Contratista es el único responsable de sus impuestos, contribuciones y seguros en su país de residencia. Bwealthics no retiene impuestos ni hace aportes a su nombre. El/la Contratista entregará el formulario fiscal indicado en la tabla inicial (W-8BEN si es persona extranjera que presta servicios fuera de los Estados Unidos; W-9 si es persona de los Estados Unidos) y avisará de cualquier cambio en su situación.</p>
+      <h4>5. Herramientas y accesos</h4>
+      <p>El/la Contratista usa sus propios equipos. Bwealthics otorgará los accesos necesarios para los servicios (Odoo, correo corporativo, 1Password, Google Drive, Gitea, herramientas de IA autorizadas y otros que apliquen). Los accesos y licencias son propiedad de Bwealthics y se revocan al terminar el contrato.</p>
+      <h4>6. Confidencialidad y datos de clientes</h4>
+      <p>El/la Contratista tendrá acceso a información altamente confidencial de Bwealthics y de sus clientes (datos bancarios, estados financieros, nóminas, información fiscal, credenciales y registros contables). Se obliga, durante el contrato y de forma indefinida después, a:</p>
+      <ul>
+        <li>No divulgar, copiar ni transferir esa información a terceros sin autorización escrita previa.</li>
+        <li>No utilizarla para beneficio propio ni de terceros.</li>
+        <li>No almacenar datos de clientes en correos o servicios personales, ni enviarlos por canales no autorizados (incluido WhatsApp personal).</li>
+        <li>Procesar transacciones de clientes únicamente en sistemas autorizados por Bwealthics.</li>
+        <li>Reportar de inmediato cualquier acceso no autorizado, pérdida, brecha o irregularidad.</li>
+      </ul>
+      <h4>7. Seguridad de la información</h4>
+      <p>Como condición para acceder a los sistemas de Bwealthics y de sus clientes, el/la Contratista deberá:</p>
+      <ul>
+        <li>Usar VPN activa y dispositivos que cumplan los estándares de seguridad de Bwealthics.</li>
+        <li>Usar exclusivamente el correo corporativo para comunicaciones de clientes y operaciones.</li>
+        <li>Gestionar credenciales únicamente en 1Password. Está prohibido compartirlas o exponerlas.</li>
+        <li>Notificar de inmediato la pérdida, robo o compromiso de cualquier dispositivo con acceso.</li>
+      </ul>
+      <h4>8. Propiedad intelectual</h4>
+      <p>Todo entregable producido bajo este contrato (análisis, reportes, procesos, documentación, configuraciones de Odoo, código, metodologías y demás) es propiedad exclusiva de Bwealthics desde su creación. El/la Contratista cede a Bwealthics todo derecho, título e interés sobre esos entregables y firmará los documentos necesarios para perfeccionar la cesión.</p>
+      <h4>9. No solicitación</h4>
+      <p>Durante el contrato y por doce (12) meses después de su terminación, el/la Contratista no podrá: (a) solicitar ni prestar servicios, por fuera de Bwealthics, a clientes activos o prospectos con quienes haya tenido contacto material; (b) inducir a miembros del equipo a terminar su relación con la empresa; ni (c) revelar la lista de clientes, las condiciones comerciales o información de las operaciones.</p>
+      <h4>10. Vigencia y terminación</h4>
+      <p>Este contrato rige desde la fecha de inicio y por tiempo indefinido. Cualquiera de las partes puede terminarlo con el preaviso escrito indicado en la tabla inicial. Bwealthics puede terminarlo de inmediato por violación de confidencialidad, uso no autorizado de accesos o datos, incumplimiento grave, o conducta que cause daño a Bwealthics o a sus clientes. A la terminación, Bwealthics pagará los servicios prestados y aprobados hasta esa fecha, y el/la Contratista transferirá archivos y trabajo en curso a quien Bwealthics designe.</p>
+      <h4>11. Ley aplicable y disposiciones generales</h4>
+      <p>Este contrato se rige por las leyes del Estado de Texas, EE.UU., y cualquier disputa se someterá a sus tribunales, previa negociación directa y, de ser necesario, mediación. Este contrato reemplaza cualquier acuerdo anterior sobre su objeto; solo puede modificarse por escrito firmado por ambas partes; las notificaciones formales se hacen por correo corporativo; y si alguna cláusula fuera inválida, las demás permanecen vigentes.</p>
+      <div style="page-break-before: always;">
+        <h4>Firmas</h4>
+        <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+          <tr>
+          <td style="width: 50%; vertical-align: top; padding: 0 4mm;">
+            <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+              <tr><td colspan="2" style="height: 8mm; font-weight: bold;">Bwealthics LLC</td></tr>
+              <tr><td colspan="2" style="height: 8mm;"><span t-out="doc.hr_responsible_id.name"/><t t-if="doc.hr_responsible_id.employee_id.job_title">, <span t-out="doc.hr_responsible_id.employee_id.job_title"/></t></td></tr>
+              <tr>
+                <td style="width: 25%; height: 25mm; vertical-align: bottom;">Firma:</td>
+                <td style="width: 75%;"><div style="height: 25mm; border: 1px solid #000; box-sizing: border-box;"></div></td>
+              </tr>
+              <tr>
+                <td style="width: 25%; height: 8mm; vertical-align: bottom;">Fecha:</td>
+                <td style="width: 75%;"><div style="height: 8mm; border: 1px solid #000; box-sizing: border-box;"></div></td>
+              </tr>
+            </table>
+          </td>
+          <td style="width: 50%; vertical-align: top; padding: 0 4mm;">
+            <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+              <tr><td colspan="2" style="height: 8mm; font-weight: bold;">Contratista</td></tr>
+              <tr><td colspan="2" style="height: 8mm;"><span t-out="doc.employee_id.legal_name or doc.employee_id.name"/></td></tr>
+              <tr>
+                <td style="width: 25%; height: 25mm; vertical-align: bottom;">Firma:</td>
+                <td style="width: 75%;"><div style="height: 25mm; border: 1px solid #000; box-sizing: border-box;"></div></td>
+              </tr>
+              <tr>
+                <td style="width: 25%; height: 8mm; vertical-align: bottom;">Fecha:</td>
+                <td style="width: 75%;"><div style="height: 8mm; border: 1px solid #000; box-sizing: border-box;"></div></td>
+              </tr>
+            </table>
+          </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </template>
+
+  <template id="report_bw_contract_contractor_en">
+    <div class="page" style="font-size: 11px;">
+      <h2 class="text-center">INDEPENDENT CONTRACTOR AGREEMENT</h2>
+      <table class="table table-sm table-bordered">
+        <tbody>
+          <tr><td style="width: 30%;"><strong>Company</strong></td><td>Bwealthics LLC, a limited liability company registered in Texas, USA ("Bwealthics")</td></tr>
+          <tr><td style="width: 30%;"><strong>Contractor</strong></td><td><span t-out="doc.employee_id.legal_name or doc.employee_id.name"/>, residing in <span t-out="', '.join([x for x in [doc.employee_id.private_city, doc.employee_id.private_country_id.name] if x])"/> (the "Contractor")</td></tr>
+          <tr><td style="width: 30%;"><strong>Services</strong></td><td><span t-out="doc.job_id.name or doc.employee_id.job_title"/></td></tr>
+          <tr><td style="width: 30%;"><strong>Start date</strong></td><td><span t-out="doc.date_start" t-options='{"widget": "date"}'/></td></tr>
+          <tr><td style="width: 30%;"><strong>Fees</strong></td><td><span style="white-space: pre-line;" t-out="doc.bw_compensation_clause"/></td></tr>
+          <tr><td style="width: 30%;"><strong>Invoicing and payment</strong></td><td><span style="white-space: pre-line;" t-out="doc.bw_invoicing_clause"/></td></tr>
+          <tr><td style="width: 30%;"><strong>Tax form</strong></td><td><t t-if="doc.employee_id.bw_tax_form == 'w9'">W-9</t><t t-elif="doc.employee_id.bw_tax_form == 'w8ben'">W-8BEN</t><t t-elif="doc.employee_id.bw_tax_form == 'w4'">W-4</t></td></tr>
+          <tr><td style="width: 30%;"><strong>Termination notice</strong></td><td><span t-out="doc.bw_notice_days"/> days</td></tr>
+          <tr><td style="width: 30%;"><strong>Corporate email</strong></td><td><span t-out="doc.employee_id.work_email"/></td></tr>
+          <tr><td style="width: 30%;"><strong>Personal email</strong></td><td><span t-out="doc.employee_id.private_email"/></td></tr>
+        </tbody>
+      </table>
+      <h4>1. Independent relationship</h4>
+      <p>The Contractor provides services as an independent contractor. This agreement does not create an employment, partnership, or agency relationship. The Contractor is not entitled to employee benefits, decides how, when, and where the services are performed, and may not bind Bwealthics before third parties.</p>
+      <h4>2. Services</h4>
+      <p>The Contractor will provide the following services: <span style="white-space: pre-line;" t-out="doc.bw_scope"/>, plus any others the parties agree in writing. Services are delivered with the quality and within the deadlines agreed for each assignment.</p>
+      <h4>3. Fees and payment</h4>
+      <p>Bwealthics will pay the fees stated in the table above against an invoice or approved time report recorded in the official tool (currently Timely). Fees are the sole consideration; no overtime, vacation, or other benefits are paid unless agreed in writing.</p>
+      <h4>4. Taxes</h4>
+      <p>The Contractor is solely responsible for their own taxes, contributions, and insurance in their country of residence. Bwealthics does not withhold taxes or make contributions on the Contractor's behalf. The Contractor will provide the tax form stated in the table above (W-8BEN for a foreign person performing services outside the United States; W-9 for a U.S. person) and will give notice of any change in status.</p>
+      <h4>5. Tools and access</h4>
+      <p>The Contractor uses their own equipment. Bwealthics will grant the access required for the services (Odoo, corporate email, 1Password, Google Drive, Gitea, authorized AI tools, and others as applicable). Access and licenses remain Bwealthics property and are revoked when the agreement ends.</p>
+      <h4>6. Confidentiality and client data</h4>
+      <p>The Contractor will have access to highly confidential information of Bwealthics and its clients (banking data, financial statements, payroll, tax information, credentials, and accounting records). During the agreement and indefinitely afterward, the Contractor shall:</p>
+      <ul>
+        <li>Not disclose, copy, or transfer that information to any third party without prior written authorization.</li>
+        <li>Not use it for personal benefit or for the benefit of any third party.</li>
+        <li>Not store client data in personal email accounts or services, nor send it through unauthorized channels (including personal WhatsApp).</li>
+        <li>Process client transactions only within systems authorized by Bwealthics.</li>
+        <li>Immediately report any unauthorized access, loss, breach, or irregularity.</li>
+      </ul>
+      <h4>7. Information security</h4>
+      <p>As a condition of access to Bwealthics and client systems, the Contractor shall:</p>
+      <ul>
+        <li>Use an active VPN and devices meeting Bwealthics' security standards.</li>
+        <li>Use corporate email exclusively for client and operations communications.</li>
+        <li>Manage credentials only through 1Password. Sharing or exposing credentials is prohibited.</li>
+        <li>Immediately report the loss, theft, or compromise of any device with access.</li>
+      </ul>
+      <h4>8. Intellectual property</h4>
+      <p>Every deliverable produced under this agreement (analyses, reports, processes, documentation, Odoo configurations, code, methodologies, and others) is the exclusive property of Bwealthics from its creation. The Contractor assigns to Bwealthics all right, title, and interest in those deliverables and will sign any documents needed to perfect the assignment.</p>
+      <h4>9. Non-solicitation</h4>
+      <p>During the agreement and for twelve (12) months after it ends, the Contractor shall not: (a) solicit or provide services, outside Bwealthics, to any active client or prospect with whom the Contractor had material contact; (b) induce team members to end their relationship with the company; or (c) disclose the client list, commercial terms, or information about operations.</p>
+      <h4>10. Term and termination</h4>
+      <p>This agreement runs from the start date for an indefinite term. Either party may terminate it with the written notice stated in the table above. Bwealthics may terminate it immediately for breach of confidentiality, unauthorized use of access or data, serious non-compliance, or conduct causing harm to Bwealthics or its clients. Upon termination, Bwealthics will pay for services performed and approved through that date, and the Contractor will transfer files and ongoing work to the person Bwealthics designates.</p>
+      <h4>11. Governing law and general provisions</h4>
+      <p>This agreement is governed by the laws of the State of Texas, USA, and any dispute shall be submitted to its courts after direct negotiation and, if necessary, mediation. This agreement supersedes any prior agreement on its subject matter; it may be amended only in writing signed by both parties; formal notices are sent by corporate email; and if any provision is held invalid, the remainder stays in force.</p>
+      <div style="page-break-before: always;">
+        <h4>Signatures</h4>
+        <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+          <tr>
+          <td style="width: 50%; vertical-align: top; padding: 0 4mm;">
+            <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+              <tr><td colspan="2" style="height: 8mm; font-weight: bold;">Bwealthics LLC</td></tr>
+              <tr><td colspan="2" style="height: 8mm;"><span t-out="doc.hr_responsible_id.name"/><t t-if="doc.hr_responsible_id.employee_id.job_title">, <span t-out="doc.hr_responsible_id.employee_id.job_title"/></t></td></tr>
+              <tr>
+                <td style="width: 25%; height: 25mm; vertical-align: bottom;">Signature:</td>
+                <td style="width: 75%;"><div style="height: 25mm; border: 1px solid #000; box-sizing: border-box;"></div></td>
+              </tr>
+              <tr>
+                <td style="width: 25%; height: 8mm; vertical-align: bottom;">Date:</td>
+                <td style="width: 75%;"><div style="height: 8mm; border: 1px solid #000; box-sizing: border-box;"></div></td>
+              </tr>
+            </table>
+          </td>
+          <td style="width: 50%; vertical-align: top; padding: 0 4mm;">
+            <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+              <tr><td colspan="2" style="height: 8mm; font-weight: bold;">Contractor</td></tr>
+              <tr><td colspan="2" style="height: 8mm;"><span t-out="doc.employee_id.legal_name or doc.employee_id.name"/></td></tr>
+              <tr>
+                <td style="width: 25%; height: 25mm; vertical-align: bottom;">Signature:</td>
+                <td style="width: 75%;"><div style="height: 25mm; border: 1px solid #000; box-sizing: border-box;"></div></td>
+              </tr>
+              <tr>
+                <td style="width: 25%; height: 8mm; vertical-align: bottom;">Date:</td>
+                <td style="width: 75%;"><div style="height: 8mm; border: 1px solid #000; box-sizing: border-box;"></div></td>
+              </tr>
+            </table>
+          </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </template>
+
+</odoo>

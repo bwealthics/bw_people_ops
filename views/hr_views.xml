@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 BWEALTHICS LLC -->
+<odoo>
+    <record id="view_employee_form_bw_people_ops" model="ir.ui.view">
+        <field name="name">hr.employee.view.form.bw.people.ops</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='employee_type']" position="after">
+                <field name="bw_doc_lang"/>
+                <field name="bw_tax_form"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="hr_contract_view_form_bw_people_ops" model="ir.ui.view">
+        <field name="name">hr.contract.view.form.bw.people.ops</field>
+        <field name="model">hr.contract</field>
+        <field name="inherit_id" ref="hr_contract.hr_contract_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_bw_send_documents" type="object"
+                        string="Send BW Documents"
+                        invisible="state != 'draft'"
+                        confirm="This emails the contract and the tax form to the worker for signature. Continue?"/>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page name="bw_documents" string="BW Documents">
+                    <group>
+                        <group>
+                            <field name="bw_doc_kind"/>
+                            <field name="bw_flsa" invisible="bw_doc_kind != 'employment'"/>
+                            <field name="bw_modality" invisible="bw_doc_kind != 'employment'"/>
+                            <field name="bw_schedule" invisible="bw_doc_kind != 'employment'"/>
+                            <field name="bw_notice_days" invisible="bw_doc_kind != 'contractor'"/>
+                        </group>
+                        <group>
+                            <field name="bw_compensation_clause"/>
+                            <field name="bw_bonus_clause" invisible="bw_doc_kind != 'employment'"/>
+                            <field name="bw_benefits_clause" invisible="bw_doc_kind != 'employment'"/>
+                            <field name="bw_invoicing_clause" invisible="bw_doc_kind != 'contractor'"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="bw_scope"/>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

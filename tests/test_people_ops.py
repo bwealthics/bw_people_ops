@@ -43,12 +43,12 @@ class TestPeopleOps(TransactionCase):
     def test_access_grant_constraints(self):
         Grant = self.env["bw.access.grant"]
         with self.assertRaises(ValidationError):
-            Grant.create({"system": "Odoo", "profile": "empleado"})
+            Grant.create({"system": "odoo", "profile": "empleado"})
         with self.assertRaises(ValidationError):
             Grant.create(
                 {
                     "employee_id": self.employee.id,
-                    "system": "Odoo",
+                    "system": "odoo",
                     "profile": "contractor",
                 }
             )
@@ -56,7 +56,7 @@ class TestPeopleOps(TransactionCase):
             Grant.create(
                 {
                     "employee_id": self.employee.id,
-                    "system": "Odoo",
+                    "system": "odoo",
                     "profile": "empleado",
                     "is_exception": True,
                 }
@@ -64,8 +64,50 @@ class TestPeopleOps(TransactionCase):
         grant = Grant.create(
             {
                 "employee_id": self.employee.id,
-                "system": "Odoo",
+                "system": "odoo",
                 "profile": "empleado",
             }
         )
         self.assertEqual(grant.name, "Test Worker @ Odoo")
+
+    def test_access_grant_state_and_unique(self):
+        Grant = self.env["bw.access.grant"]
+        vals = {
+            "employee_id": self.employee.id,
+            "system": "gitea",
+            "profile": "empleado",
+        }
+        grant = Grant.create(vals)
+        self.assertEqual(grant.state, "pending")
+        with self.assertRaises(ValidationError):
+            Grant.create(vals)
+        # A revoked (archived) grant frees the slot.
+        grant.active = False
+        Grant.create(vals)
+        # "other" may repeat.
+        Grant.create(dict(vals, system="other"))
+        Grant.create(dict(vals, system="other"))
+
+    def test_tax_form_rule(self):
+        us = self.env.ref("base.us")
+        ve = self.env.ref("base.ve")
+        employee = self.employee
+        self.assertFalse(employee.bw_tax_form)
+        employee.write({"employee_type": "employee", "private_country_id": us.id})
+        self.assertEqual(employee.bw_tax_form, "w4")
+        employee.employee_type = "contractor"
+        self.assertEqual(employee.bw_tax_form, "w9")
+        employee.private_country_id = ve
+        self.assertEqual(employee.bw_tax_form, "w8ben")
+        # Foreign "employee": not decidable, left for a human.
+        employee.employee_type = "employee"
+        self.assertFalse(employee.bw_tax_form)
+
+    def test_doc_kind_follows_employee_type(self):
+        self.assertEqual(self.contract.bw_doc_kind, "employment")
+        self.employee.employee_type = "freelance"
+        self.assertEqual(self.contract.bw_doc_kind, "contractor")
+
+    def test_send_documents_requires_data(self):
+        with self.assertRaises(UserError):
+            self.contract.action_bw_send_documents()

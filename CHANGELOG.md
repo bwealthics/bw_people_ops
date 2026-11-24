@@ -1,0 +1,30 @@
+# Changelog
+
+## 18.0.2.0.0 (2026-11-24)
+
+### Añadido
+- Accesos (`bw.access.grant`): estado de provisión, referencia externa y
+  mensaje de error; un solo acceso activo por persona y sistema.
+- Contrato: campos para prellenar el documento (FLSA, modalidad, horario,
+  alcance, compensación, bono, beneficios, facturación, preaviso).
+- Empleado: idioma del documento y formulario fiscal (W-4, W-9, W-8BEN)
+  calculado por tipo y país de residencia, editable.
+- Reporte PDF del contrato (empleo o contratista, español o inglés) y botón
+  "Send BW Documents" que crea las solicitudes de firma enlazadas al contrato.
+- W-9 y W-8BEN prellenados desde la ficha; el número fiscal lo escribe la
+  persona al firmar. Queda en el PDF firmado y en los valores de la
+  solicitud de firma de Odoo Sign; no pasa por el portal, n8n ni Telegram.
+
+### Cambiado
+- `system` pasa de texto libre a lista cerrada. La migración conserva el
+  texto anterior en las notas y lo clasifica como "Other".
+
+## 18.0.1.0.1 (2026-07-13)
+
+### Corregido
+- Puerta de activación: normaliza `_ - .` en los nombres de plantilla.
+
+## 18.0.1.0.0 (2026-07-12)
+
+### Añadido
+- Puerta de activación, registro de accesos, dueño secundario de cliente.
