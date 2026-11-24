@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 BWEALTHICS LLC -->
+<odoo>
+  <record id="action_report_bw_nda" model="ir.actions.report">
+    <field name="name">NDA BW</field>
+    <field name="model">hr.contract</field>
+    <field name="report_type">qweb-pdf</field>
+    <field name="report_name">bw_people_ops.report_bw_nda</field>
+    <field name="report_file">bw_people_ops.report_bw_nda</field>
+    <field name="print_report_name">'NDA - %s' % (object.employee_id.name)</field>
+    <field name="binding_model_id" ref="hr_contract.model_hr_contract"/>
+    <field name="binding_type">report</field>
+  </record>
+
+  <!-- Worker version of the BW client NDA (Rev1.1-2025), one language per
+       document. Same signature page as the contract so the sign items match. -->
+  <template id="report_bw_nda">
+    <t t-call="web.html_container">
+      <t t-foreach="docs" t-as="doc">
+        <t t-call="web.basic_layout">
+          <t t-if="doc.employee_id.bw_doc_lang == 'en'">
+    <div class="page" style="font-size: 11px;">
+      <h2 class="text-center">NON-DISCLOSURE AGREEMENT</h2>
+      <p>This Non-Disclosure Agreement ("Agreement") is entered into as of <span t-out="doc.date_start" t-options='{"widget": "date"}'/> (the "Effective Date") by and between Bwealthics LLC, a Texas limited liability company with its principal place of business at 27027 Westheimer Pkwy, Ste 2500, Katy, TX 77494 ("Bwealthics"), and <span t-out="doc.employee_id.legal_name or doc.employee_id.name"/>, residing in <span t-out="', '.join([x for x in [doc.employee_id.private_city, doc.employee_id.private_country_id.name] if x])"/> (the "Recipient").</p>
+      <h4>1. Purpose</h4>
+      <p>The Recipient will provide services to Bwealthics and, through Bwealthics, to its clients. The purpose of this Agreement is to ensure that any Confidential Information the Recipient receives or accesses in that work remains protected and is not disclosed to any unauthorized third party.</p>
+      <h4>2. Definition of Confidential Information</h4>
+      <p>"Confidential Information" means any information, whether written, electronic, or oral, of Bwealthics or of its clients that is designated as confidential or would reasonably be understood to be confidential. It includes, but is not limited to, financial statements, tax returns, banking and payroll data, access credentials, business plans, client lists, pricing strategies, trade secrets, proprietary software and configurations, and any other non-public business information.</p>
+      <p>Confidential Information does not include information that:</p>
+      <ul>
+        <li>Is or becomes publicly known through no wrongful act of the Recipient;</li>
+        <li>Was lawfully known to the Recipient prior to disclosure;</li>
+        <li>Is received from a third party without breach of any obligation of confidentiality; or</li>
+        <li>Is independently developed by the Recipient without use of or reference to the Confidential Information.</li>
+      </ul>
+      <h4>3. Obligations of the Recipient</h4>
+      <p>The Recipient agrees to:</p>
+      <ul>
+        <li>Maintain the confidentiality of the Confidential Information and exercise at least the same degree of care as the Recipient uses to protect their own confidential information;</li>
+        <li>Not disclose the Confidential Information to any third party without the prior written consent of Bwealthics;</li>
+        <li>Use the Confidential Information solely to perform the services agreed with Bwealthics;</li>
+        <li>Immediately notify Bwealthics of any unauthorized access, loss, or disclosure.</li>
+      </ul>
+      <h4>4. Permitted Disclosures</h4>
+      <p>The Recipient may disclose Confidential Information if required to do so by law, regulation, or court order, provided that the Recipient gives Bwealthics prompt written notice of such requirement and cooperates with any efforts to seek a protective order or limit the scope of the disclosure.</p>
+      <h4>5. Term</h4>
+      <p>This Agreement remains in effect for as long as the Recipient provides services to Bwealthics. The confidentiality obligations survive for five (5) years after that relationship ends, and for as long as the law protects it in the case of trade secrets and client information.</p>
+      <h4>6. Return of Confidential Information</h4>
+      <p>When the relationship ends or upon written request from Bwealthics, the Recipient shall promptly return or destroy all Confidential Information, including any copies, and confirm in writing that this has been done.</p>
+      <h4>7. No Rights Granted</h4>
+      <p>Nothing in this Agreement grants the Recipient any license or right under any patent, trademark, copyright, or other intellectual property of Bwealthics or of its clients.</p>
+      <h4>8. Governing Law and Jurisdiction</h4>
+      <p>This Agreement is governed by the laws of the State of Texas, without regard to its conflict of law principles. Any dispute arising out of or relating to this Agreement shall be resolved exclusively in the state or federal courts located in Harris County, Texas.</p>
+      <h4>9. Entire Agreement</h4>
+      <p>This Agreement is the entire understanding between the parties with respect to its subject matter and may not be amended except by a written instrument signed by both parties. Electronic signatures are valid and binding.</p>
+      <div style="page-break-before: always;">
+        <h4>Signatures</h4>
+        <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+          <tr>
+          <td style="width: 50%; vertical-align: top; padding: 0 4mm;">
+            <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+              <tr><td colspan="2" style="height: 8mm; font-weight: bold;">Bwealthics LLC</td></tr>
+              <tr><td colspan="2" style="height: 8mm;"><span t-out="doc.hr_responsible_id.name"/><t t-if="doc.hr_responsible_id.employee_id.job_title">, <span t-out="doc.hr_responsible_id.employee_id.job_title"/></t></td></tr>
+              <tr>
+                <td style="width: 25%; height: 25mm; vertical-align: bottom;">Signature:</td>
+                <td style="width: 75%;"><div style="height: 25mm; border: 1px solid #000; box-sizing: border-box;"></div></td>
+              </tr>
+              <tr>
+                <td style="width: 25%; height: 8mm; vertical-align: bottom;">Date:</td>
+                <td style="width: 75%;"><div style="height: 8mm; border: 1px solid #000; box-sizing: border-box;"></div></td>
+              </tr>
+            </table>
+          </td>
+          <td style="width: 50%; vertical-align: top; padding: 0 4mm;">
+            <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+              <tr><td colspan="2" style="height: 8mm; font-weight: bold;">Recipient</td></tr>
+              <tr><td colspan="2" style="height: 8mm;"><span t-out="doc.employee_id.legal_name or doc.employee_id.name"/></td></tr>
+              <tr>
+                <td style="width: 25%; height: 25mm; vertical-align: bottom;">Signature:</td>
+                <td style="width: 75%;"><div style="height: 25mm; border: 1px solid #000; box-sizing: border-box;"></div></td>
+              </tr>
+              <tr>
+                <td style="width: 25%; height: 8mm; vertical-align: bottom;">Date:</td>
+                <td style="width: 75%;"><div style="height: 8mm; border: 1px solid #000; box-sizing: border-box;"></div></td>
+              </tr>
+            </table>
+          </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+          </t>
+          <t t-else="">
+    <div class="page" style="font-size: 11px;">
+      <h2 class="text-center">ACUERDO DE CONFIDENCIALIDAD</h2>
+      <p>Este Acuerdo de Confidencialidad (el "Acuerdo") se celebra el <span t-out="doc.date_start" t-options='{"widget": "date"}'/> (la "Fecha Efectiva") entre Bwealthics LLC, compañía de responsabilidad limitada de Texas con domicilio principal en 27027 Westheimer Pkwy, Ste 2500, Katy, TX 77494 ("Bwealthics"), y <span t-out="doc.employee_id.legal_name or doc.employee_id.name"/>, con domicilio en <span t-out="', '.join([x for x in [doc.employee_id.private_city, doc.employee_id.private_country_id.name] if x])"/> (el/la "Receptor/a").</p>
+      <h4>1. Objeto</h4>
+      <p>El/la Receptor/a prestará servicios a Bwealthics y, a través de Bwealthics, a sus clientes. El objeto de este Acuerdo es asegurar que toda Información Confidencial que el/la Receptor/a reciba o a la que acceda en ese trabajo permanezca protegida y no se divulgue a terceros no autorizados.</p>
+      <h4>2. Definición de Información Confidencial</h4>
+      <p>"Información Confidencial" es toda información, escrita, electrónica u oral, de Bwealthics o de sus clientes que se designe como confidencial o que razonablemente deba entenderse como tal. Incluye, entre otros, estados financieros, declaraciones de impuestos, datos bancarios y de nómina, credenciales de acceso, planes de negocio, listas de clientes, estrategias de precios, secretos comerciales, software y configuraciones propietarias, y cualquier otra información de negocio no pública.</p>
+      <p>No es Información Confidencial la información que:</p>
+      <ul>
+        <li>Sea o llegue a ser de conocimiento público sin acto indebido del/de la Receptor/a;</li>
+        <li>Fuera legítimamente conocida por el/la Receptor/a antes de su divulgación;</li>
+        <li>Se reciba de un tercero sin incumplimiento de una obligación de confidencialidad; o</li>
+        <li>Sea desarrollada de forma independiente por el/la Receptor/a sin usar ni consultar la Información Confidencial.</li>
+      </ul>
+      <h4>3. Obligaciones del/de la Receptor/a</h4>
+      <p>El/la Receptor/a se obliga a:</p>
+      <ul>
+        <li>Mantener la confidencialidad de la Información Confidencial con al menos el mismo cuidado con que protege su propia información confidencial;</li>
+        <li>No divulgar la Información Confidencial a terceros sin el consentimiento previo y por escrito de Bwealthics;</li>
+        <li>Usar la Información Confidencial únicamente para prestar los servicios acordados con Bwealthics;</li>
+        <li>Notificar de inmediato a Bwealthics cualquier acceso no autorizado, pérdida o divulgación.</li>
+      </ul>
+      <h4>4. Divulgaciones permitidas</h4>
+      <p>El/la Receptor/a podrá divulgar Información Confidencial si la ley, una regulación o una orden judicial lo exigen, siempre que notifique por escrito y sin demora a Bwealthics y coopere con cualquier gestión para obtener una orden de protección o limitar el alcance de la divulgación.</p>
+      <h4>5. Vigencia</h4>
+      <p>Este Acuerdo rige mientras el/la Receptor/a preste servicios a Bwealthics. Las obligaciones de confidencialidad subsisten por cinco (5) años después de terminada esa relación, y por todo el tiempo que la ley lo proteja en el caso de secretos comerciales e información de clientes.</p>
+      <h4>6. Devolución de la Información Confidencial</h4>
+      <p>Al terminar la relación o ante solicitud escrita de Bwealthics, el/la Receptor/a devolverá o destruirá sin demora toda la Información Confidencial, incluidas sus copias, y confirmará por escrito que lo ha hecho.</p>
+      <h4>7. Sin concesión de derechos</h4>
+      <p>Nada en este Acuerdo otorga al/a la Receptor/a licencia o derecho alguno sobre patentes, marcas, derechos de autor u otra propiedad intelectual de Bwealthics o de sus clientes.</p>
+      <h4>8. Ley aplicable y jurisdicción</h4>
+      <p>Este Acuerdo se rige por las leyes del Estado de Texas, sin considerar sus normas de conflicto de leyes. Toda disputa derivada de este Acuerdo o relacionada con él se resolverá exclusivamente en los tribunales estatales o federales ubicados en el Condado de Harris, Texas.</p>
+      <h4>9. Acuerdo íntegro</h4>
+      <p>Este Acuerdo constituye el entendimiento completo entre las partes sobre su objeto y solo puede modificarse por escrito firmado por ambas. Las firmas electrónicas son válidas y vinculantes.</p>
+      <div style="page-break-before: always;">
+        <h4>Firmas</h4>
+        <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+          <tr>
+          <td style="width: 50%; vertical-align: top; padding: 0 4mm;">
+            <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+              <tr><td colspan="2" style="height: 8mm; font-weight: bold;">Bwealthics LLC</td></tr>
+              <tr><td colspan="2" style="height: 8mm;"><span t-out="doc.hr_responsible_id.name"/><t t-if="doc.hr_responsible_id.employee_id.job_title">, <span t-out="doc.hr_responsible_id.employee_id.job_title"/></t></td></tr>
+              <tr>
+                <td style="width: 25%; height: 25mm; vertical-align: bottom;">Firma:</td>
+                <td style="width: 75%;"><div style="height: 25mm; border: 1px solid #000; box-sizing: border-box;"></div></td>
+              </tr>
+              <tr>
+                <td style="width: 25%; height: 8mm; vertical-align: bottom;">Fecha:</td>
+                <td style="width: 75%;"><div style="height: 8mm; border: 1px solid #000; box-sizing: border-box;"></div></td>
+              </tr>
+            </table>
+          </td>
+          <td style="width: 50%; vertical-align: top; padding: 0 4mm;">
+            <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+              <tr><td colspan="2" style="height: 8mm; font-weight: bold;">Receptor/a</td></tr>
+              <tr><td colspan="2" style="height: 8mm;"><span t-out="doc.employee_id.legal_name or doc.employee_id.name"/></td></tr>
+              <tr>
+                <td style="width: 25%; height: 25mm; vertical-align: bottom;">Firma:</td>
+                <td style="width: 75%;"><div style="height: 25mm; border: 1px solid #000; box-sizing: border-box;"></div></td>
+              </tr>
+              <tr>
+                <td style="width: 25%; height: 8mm; vertical-align: bottom;">Fecha:</td>
+                <td style="width: 75%;"><div style="height: 8mm; border: 1px solid #000; box-sizing: border-box;"></div></td>
+              </tr>
+            </table>
+          </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+          </t>
+        </t>
+      </t>
+    </t>
+  </template>
+</odoo>
