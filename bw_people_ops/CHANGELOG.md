@@ -1,5 +1,12 @@
 # Changelog
 
+## 18.0.2.0.2 (2026-11-25)
+
+### Cambiado
+- Contrato y NDA: logo de Bwealthics, títulos más sobrios, texto más grande y
+  formato de papel propio (Letter, márgenes fijos). Casillas de firma
+  recalibradas para ese formato.
+
 ## 18.0.2.0.1 (2026-11-24)
 
 ### Corregido

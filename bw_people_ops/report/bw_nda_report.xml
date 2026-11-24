@@ -10,6 +10,7 @@
     <field name="print_report_name">'NDA - %s' % (object.employee_id.name)</field>
     <field name="binding_model_id" ref="hr_contract.model_hr_contract"/>
     <field name="binding_type">report</field>
+    <field name="paperformat_id" ref="paperformat_bw_document"/>
   </record>
 
   <!-- Worker version of the BW client NDA (Rev1.1-2025), one language per
@@ -18,6 +19,8 @@
     <t t-call="web.html_container">
       <t t-foreach="docs" t-as="doc">
         <t t-call="web.basic_layout">
+          <div class="bw-doc">
+          <t t-call="bw_people_ops.report_bw_style"/>
           <t t-if="doc.employee_id.bw_doc_lang == 'en'">
     <div class="page" style="font-size: 11px;">
       <h2 class="text-center">NON-DISCLOSURE AGREEMENT</h2>
@@ -162,6 +165,7 @@
       </div>
     </div>
           </t>
+          </div>
         </t>
       </t>
     </t>

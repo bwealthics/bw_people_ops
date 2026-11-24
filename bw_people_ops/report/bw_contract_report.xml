@@ -1,6 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright 2026 BWEALTHICS LLC -->
 <odoo>
+  <!-- Own paper format: the sign item positions in models/hr_contract.py are
+       measured against these margins, whatever the company format is. -->
+  <record id="paperformat_bw_document" model="report.paperformat">
+    <field name="name">BW Document (Letter)</field>
+    <field name="format">Letter</field>
+    <field name="orientation">Portrait</field>
+    <field name="margin_top">18</field>
+    <field name="margin_bottom">18</field>
+    <field name="margin_left">14</field>
+    <field name="margin_right">14</field>
+    <field name="header_line" eval="False"/>
+    <field name="header_spacing">0</field>
+    <field name="dpi">90</field>
+  </record>
+
+  <!-- Shared look of the BW documents: logo on the first page, sober titles,
+       readable body. Sub-templates keep plain markup; sizes live here. -->
+  <template id="report_bw_style">
+    <style>
+      .bw-doc .page h2 { font-size: 22px !important; font-weight: 700; text-align: center; margin: 4px 0 16px 0; letter-spacing: 0.5px; }
+      .bw-doc .page h4 { font-size: 16px !important; font-weight: 700; margin: 16px 0 5px 0; }
+      .bw-doc .page p, .bw-doc .page li, .bw-doc .page td, .bw-doc .page span { font-size: 15px !important; line-height: 1.5; }
+      .bw-doc .page p { margin: 0 0 8px 0; text-align: justify; }
+      .bw-doc .page ul { margin: 0 0 8px 0; }
+      .bw-doc .page table.table td { padding: 5px 8px; }
+      .bw-logo { text-align: center; margin-bottom: 6px; }
+      .bw-logo img { height: 22mm; }
+    </style>
+    <div class="bw-logo"><img src="/bw_people_ops/static/src/img/bw_logo.png" alt="Bwealthics"/></div>
+  </template>
   <record id="action_report_bw_contract" model="ir.actions.report">
     <field name="name">Contrato BW</field>
     <field name="model">hr.contract</field>
@@ -10,12 +40,15 @@
     <field name="print_report_name">'Contrato - %s' % (object.employee_id.name)</field>
     <field name="binding_model_id" ref="hr_contract.model_hr_contract"/>
     <field name="binding_type">report</field>
+    <field name="paperformat_id" ref="paperformat_bw_document"/>
   </record>
 
   <template id="report_bw_contract">
     <t t-call="web.html_container">
       <t t-foreach="docs" t-as="doc">
         <t t-call="web.basic_layout">
+          <div class="bw-doc">
+          <t t-call="bw_people_ops.report_bw_style"/>
           <t t-if="doc.bw_doc_kind == 'employment' and doc.employee_id.bw_doc_lang == 'es'">
             <t t-call="bw_people_ops.report_bw_contract_employment_es"/>
           </t>
@@ -28,6 +61,7 @@
           <t t-elif="doc.bw_doc_kind == 'contractor' and doc.employee_id.bw_doc_lang == 'en'">
             <t t-call="bw_people_ops.report_bw_contract_contractor_en"/>
           </t>
+          </div>
         </t>
       </t>
     </t>
