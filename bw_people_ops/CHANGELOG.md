@@ -1,5 +1,12 @@
 # Changelog
 
+## 18.0.2.0.3 (2026-11-25)
+
+### Añadido
+- Contratos y NDA: uso exclusivo de las herramientas de IA aprobadas por la
+  empresa, con cuentas de la empresa; prohibidas las cuentas personales y los
+  modelos de origen chino o alojados fuera de los Estados Unidos.
+
 ## 18.0.2.0.2 (2026-11-25)
 
 ### Cambiado

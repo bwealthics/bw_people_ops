@@ -1,7 +1,7 @@
 {
     "name": "BW People Ops",
     "summary": "Activation gate on contracts, access grant registry, secondary client owner",
-    "version": "18.0.2.0.2",
+    "version": "18.0.2.0.3",
     "category": "Human Resources",
     "author": "BWEALTHICS LLC",
     "website": "https://www.bwealthics.com",
