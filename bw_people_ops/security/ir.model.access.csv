@@ -1,2 +1,3 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_bw_access_grant_hr_user,bw.access.grant hr user,model_bw_access_grant,hr.group_hr_user,1,1,1,1
+access_bw_people_intake_hr_user,bw.people.intake hr user,model_bw_people_intake,hr.group_hr_user,1,1,1,0

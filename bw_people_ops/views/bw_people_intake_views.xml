@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 BWEALTHICS LLC -->
+<odoo>
+    <record id="bw_people_intake_view_list" model="ir.ui.view">
+        <field name="name">bw.people.intake.view.list</field>
+        <field name="model">bw.people.intake</field>
+        <field name="arch" type="xml">
+            <list create="0" edit="0" delete="0">
+                <field name="employee_id"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'submitted'"
+                       decoration-info="state in ('invited', 'in_progress')"
+                       decoration-muted="state in ('cancelled', 'expired')"/>
+                <field name="channel"/>
+                <field name="sent_at"/>
+                <field name="token_expires_at"/>
+                <field name="submitted_at"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="bw_people_intake_view_form" model="ir.ui.view">
+        <field name="name">bw.people.intake.view.form</field>
+        <field name="model">bw.people.intake</field>
+        <field name="arch" type="xml">
+            <form create="0" edit="0" delete="0">
+                <header>
+                    <button name="action_cancel" type="object"
+                            string="Cancelar invitación"
+                            invisible="state not in ('invited', 'in_progress')"
+                            confirm="El enlace dejará de funcionar y se borran las respuestas parciales. ¿Continuar?"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="employee_id"/>
+                            <field name="channel"/>
+                            <field name="sent_at"/>
+                        </group>
+                        <group>
+                            <field name="token_expires_at"/>
+                            <field name="submitted_at"/>
+                            <field name="consent_at"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="bw_people_intake_action" model="ir.actions.act_window">
+        <field name="name">Formularios del trabajador</field>
+        <field name="res_model">bw.people.intake</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p>Las invitaciones se crean desde el portal de provisión.</p>
+        </field>
+    </record>
+
+    <menuitem id="bw_people_intake_menu"
+              name="Formularios del trabajador"
+              parent="hr.menu_hr_root"
+              action="bw_people_intake_action"
+              groups="hr.group_hr_user"
+              sequence="91"/>
+</odoo>

@@ -1,7 +1,7 @@
 {
     "name": "BW People Ops",
-    "summary": "Activation gate on contracts, access grant registry, secondary client owner",
-    "version": "18.0.2.0.3",
+    "summary": "Activation gate on contracts, access grant registry, worker self-service intake",
+    "version": "18.0.2.1.0",
     "category": "Human Resources",
     "author": "BWEALTHICS LLC",
     "website": "https://www.bwealthics.com",
@@ -9,7 +9,9 @@
     "depends": ["hr_contract_sign"],
     "data": [
         "security/ir.model.access.csv",
+        "data/ir_cron_data.xml",
         "views/bw_access_grant_views.xml",
+        "views/bw_people_intake_views.xml",
         "views/res_partner_views.xml",
         "views/hr_views.xml",
         "report/bw_contract_report.xml",
