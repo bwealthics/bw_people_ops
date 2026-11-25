@@ -216,6 +216,13 @@ class BwPeopleIntake(models.Model):
         return self.sudo()
 
     @api.model
+    def _visible_employee_ids(self, employee_ids):
+        """Ids que el usuario que llama puede ver con SUS reglas de acceso
+        (multiempresa incluida), antes de pasar a sudo."""
+        Employee = self.env["hr.employee"].with_context(active_test=False)
+        return set(Employee.search([("id", "in", list(employee_ids))]).ids)
+
+    @api.model
     def _pepper(self):
         # La migración 18.0.2.1.0 la crea; esto cubre la instalación nueva.
         params = self.env["ir.config_parameter"].sudo()
@@ -330,11 +337,9 @@ class BwPeopleIntake(models.Model):
         now = Intake._intake_now()
         if not _is_id(employee_id):
             return _fail("validation", errors={"employee_id": "int"})
-        employee = self.env["hr.employee"].sudo().browse(
-            employee_id
-        ).exists()
-        if not employee:
+        if employee_id not in self._visible_employee_ids([employee_id]):
             return _fail("invalid")
+        employee = self.env["hr.employee"].sudo().browse(employee_id)
         if channel not in ("email", "whatsapp"):
             return _fail("validation", errors={"channel": "email|whatsapp"})
         if not employee.private_email:
@@ -391,6 +396,8 @@ class BwPeopleIntake(models.Model):
         now = Intake._intake_now()
         if not _is_id(employee_id):
             return _fail("validation", errors={"employee_id": "int"})
+        if employee_id not in self._visible_employee_ids([employee_id]):
+            return _fail("invalid")
         rec = Intake.search([("employee_id", "=", employee_id)], limit=1)
         if not rec:
             return _fail("invalid")
@@ -407,7 +414,8 @@ class BwPeopleIntake(models.Model):
             _is_id(i) for i in employee_ids
         ):
             return _fail("validation", errors={"employee_ids": "list[int]"})
-        recs = Intake.search([("employee_id", "in", employee_ids)])
+        visible = self._visible_employee_ids(employee_ids)
+        recs = Intake.search([("employee_id", "in", list(visible))])
         by_employee = {r.employee_id.id: r._intake_dict(now) for r in recs}
         none = {"state": "none", "channel": None, "sent_at": None,
                 "expires_at": None, "submitted_at": None}
