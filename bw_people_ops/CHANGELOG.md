@@ -1,5 +1,21 @@
 # Changelog
 
+## 18.0.2.2.0 (2026-11-25)
+
+### Añadido
+- Contrato: monto (USD), unidad (por hora, mes, año o monto fijo) y
+  frecuencia de pago (semanal, cada dos semanas, dos veces al mes, mensual o
+  contra factura). El campo `wage` del core no se toca.
+- `bw_compensation_text()`: arma la frase de compensación en el idioma del
+  documento a partir de esos tres campos.
+
+### Cambiado
+- Contrato y contrato de contratista (es y en): la fila de compensación u
+  honorarios imprime esa frase; el texto libre, si existe, la reemplaza
+  ("Compensation text (optional override)").
+- "Send BW Documents" exige compensación: el texto libre o los tres campos
+  completos (monto mayor que cero).
+
 ## 18.0.2.1.0 (2026-11-25)
 
 ### Añadido

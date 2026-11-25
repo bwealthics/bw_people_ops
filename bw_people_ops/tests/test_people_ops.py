@@ -114,6 +114,68 @@ class TestPeopleOps(TransactionCase):
         with self.assertRaises(UserError):
             self.contract.action_bw_send_documents()
 
+    def test_compensation_text(self):
+        contract = self.contract
+        self.assertEqual(contract.bw_compensation_text(), "")
+        contract.write({"bw_pay_amount": 1500, "bw_pay_unit": "month"})
+        self.assertEqual(contract.bw_compensation_text(), "", "Incomplete")
+        units = {
+            "hour": ("por hora", "per hour"),
+            "month": ("por mes", "per month"),
+            "year": ("por año", "per year"),
+            "fixed": ("como monto fijo", "as a fixed amount"),
+        }
+        frequencies = {
+            "weekly": ("semanalmente", "weekly"),
+            "biweekly": ("cada dos semanas", "every two weeks"),
+            "semimonthly": ("dos veces al mes", "twice a month"),
+            "monthly": ("mensualmente", "monthly"),
+            "on_invoice": ("contra factura aprobada", "against approved invoice"),
+        }
+        for lang, idx, verb in (("es", 0, "pagaderos"), ("en", 1, "payable")):
+            self.employee.bw_doc_lang = lang
+            for unit, unit_text in units.items():
+                for frequency, frequency_text in frequencies.items():
+                    contract.write(
+                        {"bw_pay_unit": unit, "bw_pay_frequency": frequency}
+                    )
+                    self.assertEqual(
+                        contract.bw_compensation_text(),
+                        "USD 1,500.00 %s, %s %s."
+                        % (unit_text[idx], verb, frequency_text[idx]),
+                    )
+        contract.bw_compensation_clause = "USD 20 per hour, see annex."
+        self.assertEqual(
+            contract.bw_compensation_text(), "USD 20 per hour, see annex."
+        )
+        contract.write(
+            {"bw_pay_amount": 0, "bw_pay_unit": False, "bw_pay_frequency": False}
+        )
+        self.assertEqual(
+            contract.bw_compensation_text(), "USD 20 per hour, see annex."
+        )
+
+    def test_send_documents_compensation_either_form(self):
+        def missing():
+            with self.assertRaises(UserError) as error:
+                self.contract.action_bw_send_documents()
+            return str(error.exception)
+
+        self.assertIn("compensation", missing())
+        self.contract.bw_compensation_clause = "USD 20 per hour."
+        self.assertNotIn("compensation", missing())
+        self.contract.write(
+            {
+                "bw_compensation_clause": False,
+                "bw_pay_amount": 1500,
+                "bw_pay_unit": "month",
+                "bw_pay_frequency": "biweekly",
+            }
+        )
+        self.assertNotIn("compensation", missing())
+        self.contract.bw_pay_amount = 0
+        self.assertIn("compensation", missing())
+
     def test_gate_label_ignores_worker_name_and_tax_forms(self):
         def request(reference):
             return SimpleNamespace(

@@ -37,6 +37,9 @@
                             <field name="bw_notice_days" invisible="bw_doc_kind != 'contractor'"/>
                         </group>
                         <group>
+                            <field name="bw_pay_amount"/>
+                            <field name="bw_pay_unit"/>
+                            <field name="bw_pay_frequency"/>
                             <field name="bw_compensation_clause"/>
                             <field name="bw_bonus_clause" invisible="bw_doc_kind != 'employment'"/>
                             <field name="bw_benefits_clause" invisible="bw_doc_kind != 'employment'"/>

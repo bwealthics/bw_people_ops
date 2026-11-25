@@ -77,7 +77,7 @@
           <tr><td style="width: 30%;"><strong>Cargo</strong></td><td><span t-out="doc.job_id.name or doc.employee_id.job_title"/></td></tr>
           <tr><td style="width: 30%;"><strong>Fecha de inicio</strong></td><td><span t-out="doc.date_start" t-options='{"widget": "date"}'/></td></tr>
           <tr><td style="width: 30%;"><strong>Clasificación FLSA</strong></td><td><t t-if="doc.bw_flsa == 'exempt'">Exento</t><t t-elif="doc.bw_flsa == 'non_exempt'">No Exento</t></td></tr>
-          <tr><td style="width: 30%;"><strong>Compensación</strong></td><td><span style="white-space: pre-line;" t-out="doc.bw_compensation_clause"/></td></tr>
+          <tr><td style="width: 30%;"><strong>Compensación</strong></td><td><span style="white-space: pre-line;" t-out="doc.bw_compensation_text()"/></td></tr>
           <tr><td style="width: 30%;"><strong>Bono o comisión</strong></td><td><t t-if="doc.bw_bonus_clause"><span style="white-space: pre-line;" t-out="doc.bw_bonus_clause"/></t><t t-else="">No aplica</t></td></tr>
           <tr><td style="width: 30%;"><strong>Modalidad y horario</strong></td><td><t t-if="doc.bw_modality == 'remote'">remoto</t><t t-elif="doc.bw_modality == 'hybrid'">h&#237;brido</t><t t-elif="doc.bw_modality == 'onsite'">presencial</t>, <span t-out="doc.bw_schedule"/> (hora de Texas)</td></tr>
           <tr><td style="width: 30%;"><strong>Correo corporativo</strong></td><td><span t-out="doc.employee_id.work_email"/></td></tr>
@@ -176,7 +176,7 @@
           <tr><td style="width: 30%;"><strong>Title</strong></td><td><span t-out="doc.job_id.name or doc.employee_id.job_title"/></td></tr>
           <tr><td style="width: 30%;"><strong>Start date</strong></td><td><span t-out="doc.date_start" t-options='{"widget": "date"}'/></td></tr>
           <tr><td style="width: 30%;"><strong>FLSA classification</strong></td><td><span t-out="dict(doc._fields['bw_flsa'].selection).get(doc.bw_flsa)"/></td></tr>
-          <tr><td style="width: 30%;"><strong>Compensation</strong></td><td><span style="white-space: pre-line;" t-out="doc.bw_compensation_clause"/></td></tr>
+          <tr><td style="width: 30%;"><strong>Compensation</strong></td><td><span style="white-space: pre-line;" t-out="doc.bw_compensation_text()"/></td></tr>
           <tr><td style="width: 30%;"><strong>Bonus or commission</strong></td><td><t t-if="doc.bw_bonus_clause"><span style="white-space: pre-line;" t-out="doc.bw_bonus_clause"/></t><t t-else="">Not applicable</t></td></tr>
           <tr><td style="width: 30%;"><strong>Modality and schedule</strong></td><td><t t-if="doc.bw_modality == 'remote'">Remote</t><t t-elif="doc.bw_modality == 'hybrid'">Hybrid</t><t t-elif="doc.bw_modality == 'onsite'">On-site</t>, <span t-out="doc.bw_schedule"/> (Texas time)</td></tr>
           <tr><td style="width: 30%;"><strong>Corporate email</strong></td><td><span t-out="doc.employee_id.work_email"/></td></tr>
@@ -274,7 +274,7 @@
           <tr><td style="width: 30%;"><strong>Contratista</strong></td><td><span t-out="doc.employee_id.legal_name or doc.employee_id.name"/>, con domicilio en <span t-out="', '.join([x for x in [doc.employee_id.private_city, doc.employee_id.private_country_id.name] if x])"/> ("el/la Contratista")</td></tr>
           <tr><td style="width: 30%;"><strong>Servicios</strong></td><td><span t-out="doc.job_id.name or doc.employee_id.job_title"/></td></tr>
           <tr><td style="width: 30%;"><strong>Fecha de inicio</strong></td><td><span t-out="doc.date_start" t-options='{"widget": "date"}'/></td></tr>
-          <tr><td style="width: 30%;"><strong>Honorarios</strong></td><td><span style="white-space: pre-line;" t-out="doc.bw_compensation_clause"/></td></tr>
+          <tr><td style="width: 30%;"><strong>Honorarios</strong></td><td><span style="white-space: pre-line;" t-out="doc.bw_compensation_text()"/></td></tr>
           <tr><td style="width: 30%;"><strong>Facturación y pago</strong></td><td><span style="white-space: pre-line;" t-out="doc.bw_invoicing_clause"/></td></tr>
           <tr><td style="width: 30%;"><strong>Formulario fiscal</strong></td><td><t t-if="doc.employee_id.bw_tax_form == 'w9'">W-9</t><t t-elif="doc.employee_id.bw_tax_form == 'w8ben'">W-8BEN</t><t t-elif="doc.employee_id.bw_tax_form == 'w4'">W-4</t></td></tr>
           <tr><td style="width: 30%;"><strong>Preaviso de terminación</strong></td><td><span t-out="doc.bw_notice_days"/> días</td></tr>
@@ -365,7 +365,7 @@
           <tr><td style="width: 30%;"><strong>Contractor</strong></td><td><span t-out="doc.employee_id.legal_name or doc.employee_id.name"/>, residing in <span t-out="', '.join([x for x in [doc.employee_id.private_city, doc.employee_id.private_country_id.name] if x])"/> (the "Contractor")</td></tr>
           <tr><td style="width: 30%;"><strong>Services</strong></td><td><span t-out="doc.job_id.name or doc.employee_id.job_title"/></td></tr>
           <tr><td style="width: 30%;"><strong>Start date</strong></td><td><span t-out="doc.date_start" t-options='{"widget": "date"}'/></td></tr>
-          <tr><td style="width: 30%;"><strong>Fees</strong></td><td><span style="white-space: pre-line;" t-out="doc.bw_compensation_clause"/></td></tr>
+          <tr><td style="width: 30%;"><strong>Fees</strong></td><td><span style="white-space: pre-line;" t-out="doc.bw_compensation_text()"/></td></tr>
           <tr><td style="width: 30%;"><strong>Invoicing and payment</strong></td><td><span style="white-space: pre-line;" t-out="doc.bw_invoicing_clause"/></td></tr>
           <tr><td style="width: 30%;"><strong>Tax form</strong></td><td><t t-if="doc.employee_id.bw_tax_form == 'w9'">W-9</t><t t-elif="doc.employee_id.bw_tax_form == 'w8ben'">W-8BEN</t><t t-elif="doc.employee_id.bw_tax_form == 'w4'">W-4</t></td></tr>
           <tr><td style="width: 30%;"><strong>Termination notice</strong></td><td><span t-out="doc.bw_notice_days"/> days</td></tr>

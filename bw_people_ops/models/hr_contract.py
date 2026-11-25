@@ -39,6 +39,22 @@ SIGN_ITEM_TYPES = {
 }
 
 
+# Pieces of the automatic compensation sentence, (es, en) per value.
+PAY_UNIT_TEXT = {
+    "hour": ("por hora", "per hour"),
+    "month": ("por mes", "per month"),
+    "year": ("por año", "per year"),
+    "fixed": ("como monto fijo", "as a fixed amount"),
+}
+PAY_FREQUENCY_TEXT = {
+    "weekly": ("semanalmente", "weekly"),
+    "biweekly": ("cada dos semanas", "every two weeks"),
+    "semimonthly": ("dos veces al mes", "twice a month"),
+    "monthly": ("mensualmente", "monthly"),
+    "on_invoice": ("contra factura aprobada", "against approved invoice"),
+}
+
+
 class HrContract(models.Model):
     _inherit = "hr.contract"
 
@@ -62,9 +78,32 @@ class HrContract(models.Model):
         string="Duties / Services",
         help="Responsibilities (employment) or scope of services (contractor).",
     )
+    # Own fields instead of the core `wage`: the document needs the unit and
+    # the frequency, and payroll keeps its own meaning for `wage`.
+    bw_pay_amount = fields.Float(string="Pay Amount (USD)", digits=(16, 2))
+    bw_pay_unit = fields.Selection(
+        [
+            ("hour", "Per hour"),
+            ("month", "Per month"),
+            ("year", "Per year"),
+            ("fixed", "Fixed amount"),
+        ],
+        string="Pay Unit",
+    )
+    bw_pay_frequency = fields.Selection(
+        [
+            ("weekly", "Weekly"),
+            ("biweekly", "Biweekly"),
+            ("semimonthly", "Semimonthly"),
+            ("monthly", "Monthly"),
+            ("on_invoice", "On approved invoice"),
+        ],
+        string="Pay Frequency",
+    )
     bw_compensation_clause = fields.Text(
-        string="Compensation / Fees",
-        help="Full sentence as it must read in the document.",
+        string="Compensation text (optional override)",
+        help="If set, printed instead of the sentence built from amount, "
+        "unit and frequency.",
     )
     bw_bonus_clause = fields.Text(string="Bonus / Commission")
     bw_benefits_clause = fields.Text(string="Benefits")
@@ -76,6 +115,26 @@ class HrContract(models.Model):
         for contract in self:
             contractor = contract.employee_id.employee_type in CONTRACTOR_TYPES
             contract.bw_doc_kind = "contractor" if contractor else "employment"
+
+    def bw_compensation_text(self):
+        """Compensation sentence for the documents (public: QWeb calls it).
+        The free-text clause wins; otherwise it is built from the three pay
+        fields in the worker's document language. Empty if neither is
+        complete."""
+        self.ensure_one()
+        if self.bw_compensation_clause:
+            return self.bw_compensation_clause
+        if not (
+            self.bw_pay_amount > 0 and self.bw_pay_unit and self.bw_pay_frequency
+        ):
+            return ""
+        idx = 1 if self.employee_id.bw_doc_lang == "en" else 0
+        template = ("USD %s %s, pagaderos %s.", "USD %s %s, payable %s.")[idx]
+        return template % (
+            "{:,.2f}".format(self.bw_pay_amount),
+            PAY_UNIT_TEXT[self.bw_pay_unit][idx],
+            PAY_FREQUENCY_TEXT[self.bw_pay_frequency][idx],
+        )
 
     def _bw_sign_request(self, name, pdf, items, signers):
         """Create a one-off sign template + request and link it to the
@@ -162,7 +221,7 @@ class HrContract(models.Model):
                 (_("worker email (work contact)"), worker.email),
                 (_("HR responsible with email"), company_signer.email),
                 (_("start date"), self.date_start),
-                (_("compensation clause"), self.bw_compensation_clause),
+                (_("compensation"), self.bw_compensation_text()),
                 (_("duties / services"), self.bw_scope),
                 (_("document language"), employee.bw_doc_lang),
             )
