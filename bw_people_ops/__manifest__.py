@@ -1,7 +1,7 @@
 {
     "name": "BW People Ops",
     "summary": "Activation gate on contracts, access grant registry, worker self-service intake",
-    "version": "18.0.2.2.0",
+    "version": "18.0.2.2.1",
     "category": "Human Resources",
     "author": "BWEALTHICS LLC",
     "website": "https://www.bwealthics.com",

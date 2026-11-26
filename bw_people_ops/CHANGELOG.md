@@ -1,5 +1,12 @@
 # Changelog
 
+## 18.0.2.2.1 (2026-11-26)
+
+### Corregido
+- Formulario del trabajador en español: fallaba con "Invalid language code"
+  cuando el idioma español no está instalado en la base. Ahora usa los nombres
+  de país en inglés en ese caso.
+
 ## 18.0.2.2.0 (2026-11-25)
 
 ### Añadido

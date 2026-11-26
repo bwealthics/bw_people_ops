@@ -216,6 +216,15 @@ class BwPeopleIntake(models.Model):
         return self.sudo()
 
     @api.model
+    def _installed_lang(self, code):
+        """Odoo 18 raises "Invalid language code" when the context carries a
+        language that is not installed: fall back to English."""
+        installed = self.env["res.lang"].sudo().search_count(
+            [("code", "=", code)], limit=1
+        )
+        return code if installed else "en_US"
+
+    @api.model
     def _visible_employee_ids(self, employee_ids):
         """Ids que el usuario que llama puede ver con SUS reglas de acceso
         (multiempresa incluida), antes de pasar a sudo."""
@@ -657,8 +666,9 @@ class BwPeopleIntake(models.Model):
         readonly = rec.state == "submitted"
         # Si es_ES no está instalado, Odoo devuelve los nombres de país en
         # inglés (el valor fuente); el código ISO no cambia.
+        odoo_lang = Intake._installed_lang(ODOO_LANG[lang])
         countries = self.env["res.country"].with_context(
-            lang=ODOO_LANG[lang]
+            lang=odoo_lang
         ).search([])
         values = rec._values()
         result = []
@@ -677,7 +687,7 @@ class BwPeopleIntake(models.Model):
                     {"value": c.code, "label": c.name} for c in countries
                 ]
             result.append(item)
-        country = rec._country().with_context(lang=ODOO_LANG[lang])
+        country = rec._country().with_context(lang=odoo_lang)
         return {
             "ok": True,
             "lang": lang,
