@@ -51,8 +51,8 @@ FIELDS = [
     ("private_street2", "text", False, "Dirección (línea 2)",
      "Address line 2"),
     ("private_city", "text", True, "Ciudad", "City"),
-    ("private_state_code", "state", False, "Estado (código)",
-     "State (code)"),
+    ("private_state_code", "state", False, "Estado o provincia",
+     "State or province"),
     ("private_zip", "text", False, "Código postal", "ZIP / postal code"),
     ("nationality_code", "select", True, "Nacionalidad", "Nationality"),
     ("birthday", "date", True, "Fecha de nacimiento", "Date of birth"),
@@ -67,8 +67,8 @@ FIELDS = [
 ]
 FIELD_KEYS = [f[0] for f in FIELDS]
 HELP = {
-    "private_state_code": ("2 o 3 letras, por ejemplo TX",
-                           "2 or 3 letters, e.g. TX"),
+    "private_state_code": ("Nombre o código, por ejemplo Zulia o TX",
+                           "Name or code, e.g. Zulia or TX"),
     "birthday": ("AAAA-MM-DD", "YYYY-MM-DD"),
     "mobile_phone": ("Con código de país, por ejemplo +13465550100",
                      "With country code, e.g. +13465550100"),
@@ -587,10 +587,20 @@ class BwPeopleIntake(models.Model):
         values.update(self.form_data or {})
         return values
 
-    def _state(self, code):
-        # Sin país de residencia el dominio no encuentra nada: error.
-        return self.env["res.country.state"].search(
-            [("country_id", "=", self._country().id), ("code", "=", code)],
+    def _state(self, text):
+        """Estado del país de residencia cuyo código o nombre coincide con
+        el texto (sin distinguir mayúsculas); vacío si no hay ninguno."""
+        text = (text or "").strip()
+        country = self._country()
+        if not text or not country:
+            return self.env["res.country.state"]
+        State = self.env["res.country.state"]
+        like = text.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+        return State.search(
+            [("country_id", "=", country.id), ("code", "=", text.upper())],
+            limit=1,
+        ) or State.search(
+            [("country_id", "=", country.id), ("name", "=ilike", like)],
             limit=1,
         )
 
@@ -645,8 +655,10 @@ class BwPeopleIntake(models.Model):
                 else:
                     errors[key] = MESSAGES["country"][idx]
             elif ftype == "state":
-                value = value.upper()
-                if STATE_CODE_RE.match(value) and self._state(value):
+                # Texto libre: Odoo no tiene los estados de todos los
+                # países. Si coincide con uno se enlaza al enviar; si no,
+                # se conserva junto a la ciudad.
+                if len(value) <= 60:
                     clean[key] = value
                 else:
                     errors[key] = MESSAGES["state"][idx]
@@ -743,15 +755,19 @@ class BwPeopleIntake(models.Model):
             errors["consent"] = MESSAGES["consent"][idx]
         if errors:
             return _fail("validation", errors=errors)
-        state_code = clean.get("private_state_code")
+        state_text = clean.get("private_state_code")
+        state = rec._state(state_text)
+        city = clean["private_city"]
+        if state_text and not state:
+            # Estado que Odoo no conoce: va con la ciudad ("Maracaibo, Zulia")
+            # para que salga en el contrato y en el formulario fiscal.
+            city = "%s, %s" % (city, state_text)
         rec.employee_id.write({
             "legal_name": clean["legal_name"],
             "private_street": clean["private_street"],
             "private_street2": clean.get("private_street2") or False,
-            "private_city": clean["private_city"],
-            "private_state_id": (
-                rec._state(state_code).id if state_code else False
-            ),
+            "private_city": city,
+            "private_state_id": state.id or False,
             "private_zip": clean.get("private_zip") or False,
             "country_id": self.env["res.country"].search(
                 [("code", "=", clean["nationality_code"])], limit=1

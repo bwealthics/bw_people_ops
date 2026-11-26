@@ -1,5 +1,12 @@
 # Changelog
 
+## 18.0.2.2.2 (2026-11-26)
+
+### Corregido
+- Formulario del trabajador: "Estado o provincia" es texto libre (nombre o
+  código). Antes exigía un código que Odoo solo tiene para algunos países. Si
+  no coincide con un estado de Odoo, se guarda junto a la ciudad.
+
 ## 18.0.2.2.1 (2026-11-26)
 
 ### Corregido
